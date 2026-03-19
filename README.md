@@ -12,7 +12,7 @@ using each as the source of truth for different account types:
 
 The tool produces multiple output files optimized for import:
 
-- **wealthfolio-cash.csv**: All cash accounts transformed to Wealthfolio format
+- **wealthfolio-<account>.csv**: One file per cash account in Wealthfolio format
 - **actual-<account>.csv**: One file per securities account in Actual format
   (Actual imports one account at a time)
 
@@ -27,7 +27,7 @@ The tool produces multiple output files optimized for import:
 │   ├── actual-transactions.csv       # Actual Budget transactions (input)
 │   └── wealthfolio-activities.csv    # Wealthfolio transactions (input)
 ├── output/
-│   ├── wealthfolio-cash.csv           # Cash accounts in Wealthfolio format
+│   ├── wealthfolio-<account-name>.csv # One file per cash account in Wealthfolio format
 │   └── actual-<account-name>.csv      # One file per securities account in Actual format
 └── src/actual_wealthfolio_sync/
     ├── account_manager.py # Account loading and filtering
@@ -43,7 +43,7 @@ The tool produces multiple output files optimized for import:
 2. **Convert** cash accounts with `ConverterA2W` using `data/actual-transactions.csv`
 3. **Convert** securities accounts with `ConverterW2A` using `data/wealthfolio-activities.csv`
 4. **Write** processed data:
-    - `output/wealthfolio-cash.csv`: All cash accounts in Wealthfolio format
+    - `output/wealthfolio-<account>.csv`: One file per cash account in Wealthfolio format
     - `output/actual-<account>.csv`: One file per securities account in Actual
       format
 
@@ -89,7 +89,7 @@ Valid account types: `cash`, `securities`
 
 Cash account processing uses `src/actual_wealthfolio_sync/converter_a2w.py`.
 
-For `wealthfolio-cash.csv`, output `Type` values are limited to:
+For `wealthfolio-<account>.csv`, output `Type` values are limited to:
 
 - `Withdrawal`
 - `Deposit`

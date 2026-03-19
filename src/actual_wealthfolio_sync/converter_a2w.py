@@ -5,7 +5,7 @@ import pandas as pd
 
 class ConverterA2W:
     INPUT_PATH = Path("data/actual-transactions.csv")
-    OUTPUT_PATH = Path("output/wealthfolio-cash.csv")
+    OUTPUT_DIR = Path("output")
 
     def _load_actual_data(self) -> pd.DataFrame:
         if not self.INPUT_PATH.exists():
@@ -43,6 +43,9 @@ class ConverterA2W:
         data = data[["Account", "Date", "Payee", "Notes", "Category", "Amount", "Quantity", "Unit_Price"]]
         return data.rename(columns={"Payee": "Symbol", "Notes": "Comment", "Category": "Type"})
 
+    def _sanitize_account_name(self, account_name: str) -> str:
+        return account_name.replace(" ", "-").replace("(", "").replace(")", "").replace("/", "-")
+
     def _convert_dataframe(self, data: pd.DataFrame) -> pd.DataFrame:
         converted_data = self._filter_split_rows(data)
         converted_data = self._update_empty_categories(converted_data)
@@ -50,11 +53,17 @@ class ConverterA2W:
         converted_data = self._drop_zero_amount_rows(converted_data)
         return self._to_wealthfolio_columns(converted_data)
 
-    def convert(self, cash_accounts: list[str]) -> Path:
+    def convert(self, cash_accounts: list[str]) -> dict[str, Path]:
         actual_data = self._load_actual_data()
-        cash_data = actual_data[actual_data["Account"].isin(cash_accounts)].copy()
-        converted_data = self._convert_dataframe(cash_data)
+        self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-        self.OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        converted_data.to_csv(self.OUTPUT_PATH, index=False)
-        return self.OUTPUT_PATH
+        outputs: dict[str, Path] = {}
+        for account_name in cash_accounts:
+            cash_data = actual_data[actual_data["Account"] == account_name].copy()
+            converted_data = self._convert_dataframe(cash_data)
+            safe_name = self._sanitize_account_name(account_name)
+            output_path = self.OUTPUT_DIR / f"wealthfolio-{safe_name}.csv"
+            converted_data.to_csv(output_path, index=False)
+            outputs[account_name] = output_path
+
+        return outputs
