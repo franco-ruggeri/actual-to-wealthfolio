@@ -7,6 +7,7 @@ import pandas as pd
 class ConverterA2W:
     DATA_DIR = Path("data")
     OUTPUT_DIR = Path("output")
+    DUPLICATE_AMOUNT_EPSILON = 0.000001
 
     def _get_currency_input_paths(self) -> list[tuple[str, Path]]:
         input_paths: list[tuple[str, Path]] = []
@@ -70,7 +71,15 @@ class ConverterA2W:
         converted_data = self._update_empty_categories(converted_data)
         converted_data = self._normalize_categories(converted_data)
         converted_data = self._drop_zero_amount_rows(converted_data)
-        return self._to_wealthfolio_columns(converted_data)
+        converted_data = self._to_wealthfolio_columns(converted_data)
+        return self._deduplicate_same_day_amount_category(converted_data)
+
+    def _deduplicate_same_day_amount_category(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+        duplicate_group = ["Date", "Type", "Amount"]
+        duplicate_index = data.groupby(duplicate_group).cumcount()
+        data["Amount"] = data["Amount"] + (duplicate_index * self.DUPLICATE_AMOUNT_EPSILON)
+        return data
 
     def convert(self, cash_accounts: list[str]) -> dict[str, Path]:
         currency_input_paths = self._get_currency_input_paths()
