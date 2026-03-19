@@ -4,9 +4,7 @@ from actual_wealthfolio_sync.converter import Converter
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Convert Actual Budget CSV to Wealthfolio CSV"
-    )
+    parser = argparse.ArgumentParser(description="Convert Actual Budget CSV to Wealthfolio CSV")
     parser.add_argument(
         "input",
         type=str,
@@ -21,8 +19,8 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        converter = Converter(args.input)
-        converter.process(args.output)
+        converter = Converter()
+        converter.convert(args.input, args.output)
         print(f"✓ Conversion complete: {args.output}")
     except FileNotFoundError as e:
         print(f"Error: {e}")

@@ -4,11 +4,13 @@ Operational guide for coding agents working in `actual-wealthfolio-sync`.
 
 ## 1) Repository Snapshot (as of this guide)
 
-- Python project with `pyproject.toml` and `main.py`.
+- Python project with `pyproject.toml` using src-layout structure.
+- Package location: `src/actual_wealthfolio_sync/`.
+- Main dependencies: pandas.
+- Dev dependencies: ruff, mypy.
+- Line length configured to 120 characters in `pyproject.toml`.
 - `README.md` is currently empty.
-- `pyproject.toml` contains only minimal project metadata.
 - No test files are currently present.
-- No lint/type/format tool config is currently present.
 - No Cursor rules found in `.cursor/rules/`.
 - No `.cursorrules` file found.
 - No Copilot instructions file found at `.github/copilot-instructions.md`.
@@ -89,7 +91,7 @@ If tools are not installed in the environment, report that clearly and include t
 ### Formatting
 
 - Follow PEP 8 and let formatter enforce details.
-- Line length target: 88 characters (Black/Ruff default).
+- Line length target: 120 characters (configured in `pyproject.toml`).
 - Use double quotes for strings unless project style changes.
 - Keep one logical statement per line.
 - Preserve trailing newline at end of files.

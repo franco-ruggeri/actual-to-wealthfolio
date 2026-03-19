@@ -4,33 +4,77 @@ import pandas as pd
 
 
 class Converter:
-    def __init__(self, input_path: str | Path) -> None:
-        self.input_path = Path(input_path)
-        self._data: pd.DataFrame | None = None
+    def _filter_split_rows(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
 
-    def load(self) -> None:
-        if not self.input_path.exists():
-            raise FileNotFoundError(f"Input file not found: {self.input_path}")
+        data = data[~data["Notes"].str.match(r"^\(SPLIT INTO \d+\) ", na=False)]
 
-        self._data = pd.read_csv(self.input_path)
+        is_split = data["Notes"].str.match(r"^\(SPLIT \d+ OF \d+\) ", na=False)
 
-    def convert(self) -> pd.DataFrame:
-        if self._data is None:
-            raise ValueError("No data loaded. Call load() first.")
+        data.loc[is_split, "Amount"] = data.loc[is_split, "Split_Amount"]
 
-        # TODO: Implement conversion logic once CSV structure is known
-        converted_data = self._data.copy()
-        return converted_data
+        data["Notes"] = data["Notes"].str.replace(r"^\(SPLIT \d+ OF \d+\) ", "", regex=True)
 
-    def save(self, output_path: str | Path) -> None:
-        if self._data is None:
-            raise ValueError("No data loaded. Call load() first.")
+        return data
 
-        converted_data = self.convert()
+    def _validate_stock_purchases(self, data: pd.DataFrame) -> None:
+        stock_purchases = data[data["Category"] == "Stock purchases"]
+
+        pattern = r"^\(UNIT_PRICE=\d+\.?\d*, QUANTITY=\d+\.?\d*\)$"
+
+        invalid_rows = stock_purchases[~stock_purchases["Notes"].str.match(pattern, na=False)]
+
+        if not invalid_rows.empty:
+            invalid_notes = invalid_rows["Notes"].tolist()
+            raise ValueError(
+                f"Invalid Notes format for Stock purchases. "
+                f"Expected format: (UNIT_PRICE=X, QUANTITY=Y). "
+                f"Found: {invalid_notes}"
+            )
+
+    def _update_empty_categories(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+
+        empty_category = data["Category"].isna() | (data["Category"] == "")
+
+        data.loc[empty_category & (data["Amount"] > 0), "Category"] = "Transfer in"
+        data.loc[empty_category & (data["Amount"] < 0), "Category"] = "Transfer out"
+
+        return data
+
+    def _normalize_categories(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+
+        allowed_categories = [
+            "Stock purchases",
+            "Stock sales",
+            "Transfer in",
+            "Transfer out",
+            "Dividends",
+            "Interests",
+            "Income taxes",
+            "Banking fees",
+        ]
+
+        non_standard = ~data["Category"].isin(allowed_categories)
+
+        data.loc[non_standard & (data["Amount"] < 0), "Category"] = "Withdrawal"
+        data.loc[non_standard & (data["Amount"] > 0), "Category"] = "Deposit"
+
+        return data
+
+    def convert(self, input_path: str | Path, output_path: str | Path) -> None:
+        input_path = Path(input_path)
+        if not input_path.exists():
+            raise FileNotFoundError(f"Input file not found: {input_path}")
+
+        data = pd.read_csv(input_path)
+
+        converted_data = self._filter_split_rows(data)
+        converted_data = self._update_empty_categories(converted_data)
+        converted_data = self._normalize_categories(converted_data)
+        self._validate_stock_purchases(converted_data)
+
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         converted_data.to_csv(output_path, index=False)
-
-    def process(self, output_path: str | Path) -> None:
-        self.load()
-        self.save(output_path)
