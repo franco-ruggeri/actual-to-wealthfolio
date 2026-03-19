@@ -3,7 +3,6 @@ from pathlib import Path
 
 from actual_wealthfolio_sync.loaders import DataLoader
 from actual_wealthfolio_sync.processors import DataProcessor
-from actual_wealthfolio_sync.writers import DataWriter
 
 
 def main() -> None:
@@ -12,7 +11,7 @@ def main() -> None:
 
     try:
         loader = DataLoader(data_dir=data_dir)
-        writer = DataWriter(output_dir=output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         print("Loading account configuration...")
         accounts = loader.load_accounts()
@@ -38,11 +37,14 @@ def main() -> None:
 
         print("\nWriting processed data...")
 
-        wealthfolio_output = writer.write_wealthfolio_cash(wealthfolio_cash)
+        wealthfolio_output = output_dir / "wealthfolio-cash.csv"
+        wealthfolio_cash.to_csv(wealthfolio_output, index=False)
         print(f"  Wealthfolio cash: {wealthfolio_output}")
 
         for account_name, account_data in actual_by_account.items():
-            actual_output = writer.write_actual_account(account_data, account_name)
+            safe_name = account_name.replace(" ", "-").replace("(", "").replace(")", "").replace("/", "-")
+            actual_output = output_dir / f"actual-{safe_name}.csv"
+            account_data.to_csv(actual_output, index=False)
             print(f"  Actual ({account_name}): {actual_output}")
 
         print("\nProcessing complete!")

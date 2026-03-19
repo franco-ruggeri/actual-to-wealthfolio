@@ -33,7 +33,6 @@ The tool produces multiple output files optimized for import:
     ├── models.py         # Data models (Account, transactions)
     ├── loaders.py        # CSV loading utilities
     ├── processors.py     # Transformation logic
-    ├── writers.py        # CSV writing utilities
     └── main.py           # Main orchestration
 
 ```
