@@ -11,7 +11,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "actual-wealthfolio-sync"
+name = "actual-to-wealthfolio"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
