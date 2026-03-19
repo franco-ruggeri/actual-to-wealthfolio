@@ -30,26 +30,22 @@ The tool produces multiple output files optimized for import:
 │   ├── wealthfolio-cash.csv           # Cash accounts in Wealthfolio format
 │   └── actual-<account-name>.csv      # One file per securities account in Actual format
 └── src/actual_wealthfolio_sync/
-    ├── models.py         # Data models (Account, transactions)
-    ├── loaders.py        # CSV loading utilities
-    ├── processors.py     # Transformation logic
+    ├── account_manager.py # Account loading and filtering
+    ├── converter_a2w.py   # Actual cash -> Wealthfolio converter
+    ├── converter_w2a.py   # Wealthfolio securities -> Actual converter
     └── main.py           # Main orchestration
 
 ```
 
 ### Data Flow
 
-1. **Load** account configuration from `data/wealthfolio-accounts.csv`
-2. **Load** transactions from `data/actual-transactions.csv` and `data/wealthfolio-activities.csv`
-3. **Process** each dataset:
-   - Wealthfolio cash output: Transform cash accounts from Actual to Wealthfolio
-     format
-   - Actual per-account outputs: Transform securities accounts from Wealthfolio
-     to Actual format (one file per account)
+1. **Load** account configuration with `AccountManager`
+2. **Convert** cash accounts with `ConverterA2W` using `data/actual-transactions.csv`
+3. **Convert** securities accounts with `ConverterW2A` using `data/wealthfolio-activities.csv`
 4. **Write** processed data:
-   - `output/wealthfolio-cash.csv`: All cash accounts in Wealthfolio format
-   - `output/actual-<account>.csv`: One file per securities account in Actual
-     format
+    - `output/wealthfolio-cash.csv`: All cash accounts in Wealthfolio format
+    - `output/actual-<account>.csv`: One file per securities account in Actual
+      format
 
 ## Installation
 
@@ -91,8 +87,7 @@ Valid account types: `cash`, `securities`
 
 ## Development Status
 
-Cash account processing uses the converter pipeline in
-`src/actual_wealthfolio_sync/converter.py`.
+Cash account processing uses `src/actual_wealthfolio_sync/converter_a2w.py`.
 
 For `wealthfolio-cash.csv`, output `Type` values are limited to:
 

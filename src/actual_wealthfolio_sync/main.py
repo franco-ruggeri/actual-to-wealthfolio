@@ -1,50 +1,31 @@
 import sys
-from pathlib import Path
 
-from actual_wealthfolio_sync.loaders import DataLoader
-from actual_wealthfolio_sync.processors import DataProcessor
+from actual_wealthfolio_sync.account_manager import AccountManager
+from actual_wealthfolio_sync.converter_a2w import ConverterA2W
+from actual_wealthfolio_sync.converter_w2a import ConverterW2A
 
 
 def main() -> None:
-    data_dir = Path("data")
-    output_dir = Path("output")
-
     try:
-        loader = DataLoader(data_dir=data_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        account_manager = AccountManager()
+        converter_a2w = ConverterA2W()
+        converter_w2a = ConverterW2A()
 
         print("Loading account configuration...")
-        accounts = loader.load_accounts()
-        cash_accounts = loader.get_cash_accounts(accounts)
-        securities_accounts = loader.get_securities_accounts(accounts)
+        cash_accounts = account_manager.get_cash_accounts()
+        securities_accounts = account_manager.get_securities_accounts()
 
         print(f"  Found {len(cash_accounts)} cash account(s)")
         print(f"  Found {len(securities_accounts)} securities account(s)")
 
-        print("\nLoading transaction data...")
-        actual_data = loader.load_actual_data()
-        wealthfolio_data = loader.load_wealthfolio_data()
-
-        print(f"  Loaded {len(actual_data)} Actual transactions")
-        print(f"  Loaded {len(wealthfolio_data)} Wealthfolio transactions")
-
         print("\nProcessing data...")
-        processor = DataProcessor(accounts)
-
-        actual_by_account = processor.process_actual_by_account(actual_data, wealthfolio_data, securities_accounts)
-
-        wealthfolio_cash = processor.process_wealthfolio_cash(actual_data, cash_accounts)
+        wealthfolio_output = converter_a2w.run(cash_accounts)
+        actual_outputs = converter_w2a.run(securities_accounts)
 
         print("\nWriting processed data...")
-
-        wealthfolio_output = output_dir / "wealthfolio-cash.csv"
-        wealthfolio_cash.to_csv(wealthfolio_output, index=False)
         print(f"  Wealthfolio cash: {wealthfolio_output}")
 
-        for account_name, account_data in actual_by_account.items():
-            safe_name = account_name.replace(" ", "-").replace("(", "").replace(")", "").replace("/", "-")
-            actual_output = output_dir / f"actual-{safe_name}.csv"
-            account_data.to_csv(actual_output, index=False)
+        for account_name, actual_output in actual_outputs.items():
             print(f"  Actual ({account_name}): {actual_output}")
 
         print("\nProcessing complete!")

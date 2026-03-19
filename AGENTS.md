@@ -32,8 +32,8 @@ Use these commands unless the repository evolves with explicit alternatives.
 
 ### Run application
 
-- Run via console script: `uv run actual-wealthfolio-sync <input.csv> <output.csv>`
-- Run as module: `uv run python -m actual_wealthfolio_sync <input.csv> <output.csv>`
+- Run via console script: `uv run actual-wealthfolio-sync`
+- Run as module: `uv run python -m actual_wealthfolio_sync`
 
 ### Tests
 
