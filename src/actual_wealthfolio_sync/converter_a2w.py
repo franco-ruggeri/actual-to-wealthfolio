@@ -41,7 +41,7 @@ class ConverterA2W:
         data = data.copy()
         data["Quantity"] = None
         data["Unit_Price"] = None
-        data = data[["Account", "Date", "Payee", "Notes", "Category", "Amount", "Quantity", "Unit_Price"]]
+        data = data[["Date", "Payee", "Notes", "Category", "Amount", "Quantity", "Unit_Price"]]
         return data.rename(columns={"Payee": "Symbol", "Notes": "Comment", "Category": "Type"})
 
     def _sanitize_account_name(self, account_name: str) -> str:
