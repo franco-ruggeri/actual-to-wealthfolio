@@ -18,5 +18,5 @@ uv run python -m actual_wealthfolio_sync input.csv output.csv
 
 - Filters split transaction rows
 - Normalizes transaction categories
-- Validates stock purchase format: `(UNIT_PRICE=X, QUANTITY=Y)`
+- Validates stock purchase format: `(QUANTITY=X, UNIT_PRICE=Y)`
 - Auto-categorizes transfers for empty categories
