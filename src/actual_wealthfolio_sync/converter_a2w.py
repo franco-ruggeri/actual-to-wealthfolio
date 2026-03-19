@@ -34,7 +34,7 @@ class ConverterA2W:
         return data
 
     def _drop_zero_amount_rows(self, data: pd.DataFrame) -> pd.DataFrame:
-        return data[data["Amount"] != 0].copy()
+        return data[(data["Amount"] > 0) | (data["Amount"] < 0)].copy()
 
     def _to_wealthfolio_columns(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
