@@ -1,6 +1,6 @@
 import argparse
 
-from actual_to_wealthfolio.converter import Converter
+from actual_wealthfolio_sync.converter import Converter
 
 
 def main() -> None:

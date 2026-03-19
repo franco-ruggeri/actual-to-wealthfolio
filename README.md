@@ -1,4 +1,4 @@
-# actual-to-wealthfolio
+# actual-wealthfolio-sync
 
 Convert Actual Budget CSV exports to Wealthfolio-compatible format.
 
@@ -11,7 +11,7 @@ uv sync
 ## Usage
 
 ```bash
-uv run python -m actual_to_wealthfolio input.csv output.csv
+uv run python -m actual_wealthfolio_sync input.csv output.csv
 ```
 
 ## Assumptions
