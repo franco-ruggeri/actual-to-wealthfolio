@@ -98,6 +98,9 @@ class Converter:
         output_columns = ["Account", "Date", "Notes", "Category", "Amount", "Quantity", "Unit_Price"]
         converted_data = converted_data[output_columns]
 
+        # Rename columns for output
+        converted_data = converted_data.rename(columns={"Notes": "Comment", "Category": "Type"})
+
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         converted_data.to_csv(output_path, index=False)
