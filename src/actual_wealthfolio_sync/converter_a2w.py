@@ -31,6 +31,7 @@ class ConverterA2W:
         non_standard = ~data["Category"].isin(allowed_categories)
         data.loc[non_standard & (data["Amount"] < 0), "Category"] = "Withdrawal"
         data.loc[non_standard & (data["Amount"] > 0), "Category"] = "Deposit"
+        data.loc[non_standard & (data["Amount"] == 0), "Category"] = "Deposit"
         return data
 
     def _to_wealthfolio_columns(self, data: pd.DataFrame) -> pd.DataFrame:
