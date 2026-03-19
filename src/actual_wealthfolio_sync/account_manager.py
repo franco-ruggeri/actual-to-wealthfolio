@@ -19,7 +19,7 @@ class AccountManager:
 
         result: dict[str, str] = {}
         for row in data.itertuples(index=False):
-            result[str(row.name)] = str(row.accountType)
+            result[str(row.name)] = str(row.accountType).strip().lower()
 
         return result
 
