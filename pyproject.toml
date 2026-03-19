@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Synchronization tool for Actual Budget and Wealthfolio"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pandas>=3.0.1",
+]
 
 [project.scripts]
 actual-wealthfolio-sync = "actual_wealthfolio_sync.main:main"
