@@ -79,6 +79,22 @@ class Converter:
 
         return data
 
+    def _map_category_names(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+
+        category_mapping = {
+            "Banking fees": "Fee",
+            "Stock sales": "Sell",
+            "Stock purchases": "Purchase",
+            "Income taxes": "Tax",
+            "Dividends": "Dividend",
+            "Interests": "Interest",
+        }
+
+        data["Category"] = data["Category"].replace(category_mapping)
+
+        return data
+
     def convert(self, input_path: str | Path, output_path: str | Path) -> None:
         input_path = Path(input_path)
         if not input_path.exists():
@@ -91,6 +107,7 @@ class Converter:
         converted_data = self._normalize_categories(converted_data)
         self._validate_notes_format(converted_data)
         converted_data = self._extract_quantity_and_unit_price(converted_data)
+        converted_data = self._map_category_names(converted_data)
 
         # Select only required columns
         output_columns = ["Account", "Date", "Notes", "Category", "Amount", "Quantity", "Unit_Price"]
