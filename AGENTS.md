@@ -1,11 +1,11 @@
 # AGENTS.md
 
-Operational guide for coding agents working in `actual-wealthfolio-sync`.
+Operational guide for coding agents working in `actual-to-wealthfolio`.
 
 ## 1) Repository Snapshot (as of this guide)
 
 - Python project with `pyproject.toml` using src-layout structure.
-- Package location: `src/actual_wealthfolio_sync/`.
+- Package location: `src/actual_to_wealthfolio/`.
 - Main dependencies: pandas.
 - Dev dependencies: ruff, mypy.
 - Line length configured to 120 characters in `pyproject.toml`.
