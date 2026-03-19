@@ -160,6 +160,9 @@ If tools are not installed in the environment, report that clearly and include t
 - Preserve existing user changes in dirty worktrees.
 - If you discover unrelated issues, report them separately.
 - Make commit messages explain **why** the change exists.
+- After each completed code or docs change, create a commit and push to `origin`.
+- Use Conventional Commits format for commit subjects (e.g., `feat: ...`, `fix: ...`, `docs: ...`).
+- Keep the main commit subject under 50 characters.
 
 ## 6) Config-Specific Instructions Discovery
 
