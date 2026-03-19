@@ -87,6 +87,14 @@ id,name,accountType,group,currency,isDefault,isActive,isArchived,trackingMode,cr
 
 Valid account types: `cash`, `securities`
 
+### Account Name Matching
+
+Account names must match exactly between the Actual input files (`actual-<currency>.csv`)
+and `wealthfolio-accounts.csv`.
+
+If an account name differs (including spaces, punctuation, or casing), that account's
+rows will not be selected for conversion.
+
 ## Development Status
 
 Cash account processing uses `src/actual_wealthfolio_sync/converter_a2w.py`.
