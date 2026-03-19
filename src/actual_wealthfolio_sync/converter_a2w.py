@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 import pandas as pd
 
@@ -44,7 +45,8 @@ class ConverterA2W:
         return data.rename(columns={"Payee": "Symbol", "Notes": "Comment", "Category": "Type"})
 
     def _sanitize_account_name(self, account_name: str) -> str:
-        return account_name.replace(" ", "-").replace("(", "").replace(")", "").replace("/", "-")
+        kebab = re.sub(r"[^a-z0-9]+", "-", account_name.lower())
+        return kebab.strip("-")
 
     def _convert_dataframe(self, data: pd.DataFrame) -> pd.DataFrame:
         converted_data = self._filter_split_rows(data)
