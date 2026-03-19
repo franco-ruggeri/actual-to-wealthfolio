@@ -46,7 +46,7 @@ class ConverterA2W:
         converted_data = self._normalize_categories(converted_data)
         return self._to_wealthfolio_columns(converted_data)
 
-    def run(self, cash_accounts: list[str]) -> Path:
+    def convert(self, cash_accounts: list[str]) -> Path:
         actual_data = self._load_actual_data()
         cash_data = actual_data[actual_data["Account"].isin(cash_accounts)].copy()
         converted_data = self._convert_dataframe(cash_data)

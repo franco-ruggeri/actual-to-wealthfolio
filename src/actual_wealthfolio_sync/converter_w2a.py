@@ -15,7 +15,7 @@ class ConverterW2A:
     def _sanitize_account_name(self, account_name: str) -> str:
         return account_name.replace(" ", "-").replace("(", "").replace(")", "").replace("/", "-")
 
-    def run(self, securities_accounts: list[str]) -> dict[str, Path]:
+    def convert(self, securities_accounts: list[str]) -> dict[str, Path]:
         wealthfolio_data = self._load_wealthfolio_data()
         self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -19,8 +19,8 @@ def main() -> None:
         print(f"  Found {len(securities_accounts)} securities account(s)")
 
         print("\nProcessing data...")
-        wealthfolio_output = converter_a2w.run(cash_accounts)
-        actual_outputs = converter_w2a.run(securities_accounts)
+        wealthfolio_output = converter_a2w.convert(cash_accounts)
+        actual_outputs = converter_w2a.convert(securities_accounts)
 
         print("\nWriting processed data...")
         print(f"  Wealthfolio cash: {wealthfolio_output}")
