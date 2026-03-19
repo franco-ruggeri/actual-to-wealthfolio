@@ -18,8 +18,8 @@ def main() -> None:
         wealthfolio_outputs = converter_a2w.convert(cash_accounts)
 
         print("\nWriting processed data...")
-        for account_name, wealthfolio_output in wealthfolio_outputs.items():
-            print(f"  Wealthfolio ({account_name}): {wealthfolio_output}")
+        for account_key, wealthfolio_output in wealthfolio_outputs.items():
+            print(f"  Wealthfolio ({account_key}): {wealthfolio_output}")
 
         # for account_name, actual_output in actual_outputs.items():
         #     print(f"  Actual ({account_name}): {actual_output}")

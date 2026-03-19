@@ -5,13 +5,29 @@ import pandas as pd
 
 
 class ConverterA2W:
-    INPUT_PATH = Path("data/actual-transactions.csv")
+    DATA_DIR = Path("data")
     OUTPUT_DIR = Path("output")
 
-    def _load_actual_data(self) -> pd.DataFrame:
-        if not self.INPUT_PATH.exists():
-            raise FileNotFoundError(f"Actual data file not found: {self.INPUT_PATH}")
-        return pd.read_csv(self.INPUT_PATH)
+    def _get_currency_input_paths(self) -> list[tuple[str, Path]]:
+        input_paths: list[tuple[str, Path]] = []
+        for path in sorted(self.DATA_DIR.glob("actual-*.csv")):
+            match = re.fullmatch(r"actual-([a-z0-9]+)", path.stem)
+            if not match:
+                continue
+            currency = match.group(1)
+            input_paths.append((currency, path))
+
+        if not input_paths:
+            raise FileNotFoundError(
+                f"No currency input files found in {self.DATA_DIR} (expected actual-<currency>.csv)"
+            )
+
+        return input_paths
+
+    def _load_actual_data(self, input_path: Path) -> pd.DataFrame:
+        if not input_path.exists():
+            raise FileNotFoundError(f"Actual data file not found: {input_path}")
+        return pd.read_csv(input_path)
 
     def _filter_split_rows(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
@@ -57,16 +73,24 @@ class ConverterA2W:
         return self._to_wealthfolio_columns(converted_data)
 
     def convert(self, cash_accounts: list[str]) -> dict[str, Path]:
-        actual_data = self._load_actual_data()
+        currency_input_paths = self._get_currency_input_paths()
         self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
         outputs: dict[str, Path] = {}
-        for account_name in cash_accounts:
-            cash_data = actual_data[actual_data["Account"] == account_name].copy()
-            converted_data = self._convert_dataframe(cash_data)
-            safe_name = self._sanitize_account_name(account_name)
-            output_path = self.OUTPUT_DIR / f"wealthfolio-{safe_name}.csv"
-            converted_data.to_csv(output_path, index=False)
-            outputs[account_name] = output_path
+        for currency, input_path in currency_input_paths:
+            actual_data = self._load_actual_data(input_path)
+            for account_name in cash_accounts:
+                cash_data = actual_data[actual_data["Account"] == account_name].copy()
+                if cash_data.empty:
+                    continue
+
+                converted_data = self._convert_dataframe(cash_data)
+                if converted_data.empty:
+                    continue
+
+                safe_name = self._sanitize_account_name(account_name)
+                output_path = self.OUTPUT_DIR / f"wealthfolio-{currency}-{safe_name}.csv"
+                converted_data.to_csv(output_path, index=False)
+                outputs[f"{currency}:{account_name}"] = output_path
 
         return outputs
