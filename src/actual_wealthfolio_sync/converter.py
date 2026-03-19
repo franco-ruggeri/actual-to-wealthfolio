@@ -7,12 +7,10 @@ class Converter:
     def _filter_split_rows(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
 
+        # Remove parent split rows
         data = data[~data["Notes"].str.match(r"^\(SPLIT INTO \d+\) ", na=False)]
 
-        is_split = data["Notes"].str.match(r"^\(SPLIT \d+ OF \d+\) ", na=False)
-
-        data.loc[is_split, "Amount"] = data.loc[is_split, "Split_Amount"]
-
+        # Clean split prefixes from notes
         data["Notes"] = data["Notes"].str.replace(r"^\(SPLIT \d+ OF \d+\) ", "", regex=True)
 
         return data
