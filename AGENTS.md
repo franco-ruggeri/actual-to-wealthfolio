@@ -6,10 +6,11 @@ Operational guide for coding agents working in `actual-to-wealthfolio`.
 
 - Python project with `pyproject.toml` using src-layout structure.
 - Package location: `src/actual_to_wealthfolio/`.
-- Main dependencies: pandas.
-- Dev dependencies: ruff, mypy.
+- Main dependencies: pandas >=3.0.1
+- Dev dependencies: ruff, mypy, basedpyright, pandas-stubs.
 - Line length configured to 120 characters in `pyproject.toml`.
-- `README.md` is currently empty.
+- Project purpose: Convert Actual Budget CSV exports to Wealthfolio-compatible format.
+- Entry point: `actual_to_wealthfolio.main:main` (console script).
 - No test files are currently present.
 - No Cursor rules found in `.cursor/rules/`.
 - No `.cursorrules` file found.
@@ -31,7 +32,8 @@ Use these commands unless the repository evolves with explicit alternatives.
 
 ### Run application
 
-- Run entry script: `uv run python main.py`
+- Run via console script: `uv run actual-to-wealthfolio <input.csv> <output.csv>`
+- Run as module: `uv run python -m actual_to_wealthfolio <input.csv> <output.csv>`
 
 ### Tests
 
