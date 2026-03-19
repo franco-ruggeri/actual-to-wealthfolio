@@ -17,19 +17,20 @@ class Converter:
 
         return data
 
-    def _validate_stock_purchases(self, data: pd.DataFrame) -> None:
-        stock_purchases = data[data["Category"] == "Stock purchases"]
+    def _validate_notes_format(self, data: pd.DataFrame) -> None:
+        categories_requiring_format = ["Stock purchases", "Dividends"]
+        rows_to_validate = data[data["Category"].isin(categories_requiring_format)]
 
         pattern = r"^\(UNIT_PRICE=\d+\.?\d*, QUANTITY=\d+\.?\d*\)$"
 
-        invalid_rows = stock_purchases[~stock_purchases["Notes"].str.match(pattern, na=False)]
+        invalid_rows = rows_to_validate[~rows_to_validate["Notes"].str.match(pattern, na=False)]
 
         if not invalid_rows.empty:
-            invalid_notes = invalid_rows["Notes"].tolist()
+            invalid_data = invalid_rows[["Category", "Notes"]].to_dict("records")
             raise ValueError(
-                f"Invalid Notes format for Stock purchases. "
+                f"Invalid Notes format for Stock purchases/Dividends. "
                 f"Expected format: (UNIT_PRICE=X, QUANTITY=Y). "
-                f"Found: {invalid_notes}"
+                f"Found: {invalid_data}"
             )
 
     def _update_empty_categories(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -73,7 +74,7 @@ class Converter:
         converted_data = self._filter_split_rows(data)
         converted_data = self._update_empty_categories(converted_data)
         converted_data = self._normalize_categories(converted_data)
-        self._validate_stock_purchases(converted_data)
+        self._validate_notes_format(converted_data)
 
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
