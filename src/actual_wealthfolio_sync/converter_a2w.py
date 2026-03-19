@@ -89,8 +89,8 @@ class ConverterA2W:
                     continue
 
                 safe_name = self._sanitize_account_name(account_name)
-                output_path = self.OUTPUT_DIR / f"wealthfolio-{currency}-{safe_name}.csv"
+                output_path = self.OUTPUT_DIR / f"wealthfolio-{safe_name}-{currency}.csv"
                 converted_data.to_csv(output_path, index=False)
-                outputs[f"{currency}:{account_name}"] = output_path
+                outputs[f"{currency}:{safe_name}"] = output_path
 
         return outputs

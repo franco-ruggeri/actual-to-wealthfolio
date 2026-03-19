@@ -12,7 +12,7 @@ using each as the source of truth for different account types:
 
 The tool produces multiple output files optimized for import:
 
-- **wealthfolio-<currency>-<account>.csv**: One file per cash account and currency for Wealthfolio import
+- **wealthfolio-<account>-<currency>.csv**: One file per cash account and currency for Wealthfolio import
 - **actual-<account>.csv**: One file per securities account in Actual format
   (Actual imports one account at a time)
 
@@ -29,7 +29,7 @@ The tool produces multiple output files optimized for import:
 │   ├── ...                           # One Actual file per currency: actual-<currency>.csv
 │   └── wealthfolio-activities.csv    # Wealthfolio transactions (input)
 ├── output/
-│   ├── wealthfolio-<currency>-<account-name>.csv # One file per cash account and currency for Wealthfolio import
+│   ├── wealthfolio-<account-name>-<currency>.csv # One file per cash account and currency for Wealthfolio import
 │   └── actual-<account-name>.csv      # One file per securities account in Actual format
 └── src/actual_wealthfolio_sync/
     ├── account_manager.py # Account loading and filtering
@@ -45,7 +45,7 @@ The tool produces multiple output files optimized for import:
 2. **Convert** cash accounts with `ConverterA2W` using `data/actual-<currency>.csv` files
 3. **Convert** securities accounts with `ConverterW2A` using `data/wealthfolio-activities.csv`
 4. **Write** processed data:
-    - `output/wealthfolio-<currency>-<account>.csv`: One file per cash account and currency for Wealthfolio import
+    - `output/wealthfolio-<account>-<currency>.csv`: One file per cash account and currency for Wealthfolio import
     - `output/actual-<account>.csv`: One file per securities account in Actual
       format
 
@@ -99,7 +99,7 @@ rows will not be selected for conversion.
 
 Cash account processing uses `src/actual_wealthfolio_sync/converter_a2w.py`.
 
-For `wealthfolio-<currency>-<account>.csv`, output `Type` values are limited to:
+For `wealthfolio-<account>-<currency>.csv`, output `Type` values are limited to:
 
 - `Withdrawal`
 - `Deposit`
