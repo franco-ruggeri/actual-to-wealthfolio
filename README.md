@@ -11,7 +11,7 @@ uv sync
 ## Usage
 
 ```bash
-uv run python -m actual_wealthfolio_sync.main input.csv output.csv
+uv run python -m actual_wealthfolio_sync input.csv output.csv
 ```
 
 ## Features
