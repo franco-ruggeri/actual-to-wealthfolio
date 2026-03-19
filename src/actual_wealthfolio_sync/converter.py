@@ -21,7 +21,7 @@ class Converter:
         categories_requiring_format = ["Stock purchases", "Dividends"]
         rows_to_validate = data[data["Category"].isin(categories_requiring_format)]
 
-        pattern = r"^\(UNIT_PRICE=\d+\.?\d*, QUANTITY=\d+\.?\d*\)$"
+        pattern = r"^\(QUANTITY=\d+\.?\d*, UNIT_PRICE=\d+\.?\d*\)$"
 
         invalid_rows = rows_to_validate[~rows_to_validate["Notes"].str.match(pattern, na=False)]
 
@@ -29,7 +29,7 @@ class Converter:
             invalid_data = invalid_rows[["Category", "Notes"]].to_dict("records")
             raise ValueError(
                 f"Invalid Notes format for Stock purchases/Dividends. "
-                f"Expected format: (UNIT_PRICE=X, QUANTITY=Y). "
+                f"Expected format: (QUANTITY=X, UNIT_PRICE=Y). "
                 f"Found: {invalid_data}"
             )
 
