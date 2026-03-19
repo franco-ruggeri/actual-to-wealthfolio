@@ -6,7 +6,7 @@ import pandas as pd
 class AccountManager:
     ACCOUNTS_PATH = Path("data/wealthfolio-accounts.csv")
 
-    def load_accounts(self) -> dict[str, str]:
+    def _load_accounts(self) -> dict[str, str]:
         if not self.ACCOUNTS_PATH.exists():
             raise FileNotFoundError(f"Accounts file not found: {self.ACCOUNTS_PATH}")
 
@@ -24,9 +24,9 @@ class AccountManager:
         return result
 
     def get_cash_accounts(self) -> list[str]:
-        accounts = self.load_accounts()
+        accounts = self._load_accounts()
         return [name for name, account_type in accounts.items() if account_type == "cash"]
 
     def get_securities_accounts(self) -> list[str]:
-        accounts = self.load_accounts()
+        accounts = self._load_accounts()
         return [name for name, account_type in accounts.items() if account_type == "securities"]
