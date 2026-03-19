@@ -15,13 +15,21 @@ class ConverterW2A:
     def _sanitize_account_name(self, account_name: str) -> str:
         return account_name.replace(" ", "-").replace("(", "").replace(")", "").replace("/", "-")
 
+    def _get_account_column(self, data: pd.DataFrame) -> str:
+        if "Account" in data.columns:
+            return "Account"
+        if "accountName" in data.columns:
+            return "accountName"
+        raise ValueError("Wealthfolio activities file must contain 'Account' or 'accountName' column")
+
     def convert(self, securities_accounts: list[str]) -> dict[str, Path]:
         wealthfolio_data = self._load_wealthfolio_data()
+        account_column = self._get_account_column(wealthfolio_data)
         self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
         outputs: dict[str, Path] = {}
         for account_name in securities_accounts:
-            account_data = wealthfolio_data[wealthfolio_data["Account"] == account_name].copy()
+            account_data = wealthfolio_data[wealthfolio_data[account_column] == account_name].copy()
             safe_name = self._sanitize_account_name(account_name)
             output_path = self.OUTPUT_DIR / f"actual-{safe_name}.csv"
             account_data.to_csv(output_path, index=False)
