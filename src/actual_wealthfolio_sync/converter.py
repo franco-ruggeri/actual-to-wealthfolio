@@ -64,6 +64,23 @@ class Converter:
 
         return data
 
+    def _extract_quantity_and_unit_price(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+
+        # Initialize new columns with None
+        data["Quantity"] = None
+        data["Unit_Price"] = None
+
+        # Extract values from Notes for matching rows
+        pattern = r"^\(QUANTITY=(?P<quantity>\d+\.?\d*), UNIT_PRICE=(?P<unit_price>\d+\.?\d*)\)$"
+        extracted = data["Notes"].str.extract(pattern, expand=True)
+
+        # Convert to float and assign to new columns
+        data["Quantity"] = extracted["quantity"].astype(float)
+        data["Unit_Price"] = extracted["unit_price"].astype(float)
+
+        return data
+
     def convert(self, input_path: str | Path, output_path: str | Path) -> None:
         input_path = Path(input_path)
         if not input_path.exists():
@@ -75,6 +92,7 @@ class Converter:
         converted_data = self._update_empty_categories(converted_data)
         converted_data = self._normalize_categories(converted_data)
         self._validate_notes_format(converted_data)
+        converted_data = self._extract_quantity_and_unit_price(converted_data)
 
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
