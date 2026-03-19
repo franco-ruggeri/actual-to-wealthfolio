@@ -31,8 +31,10 @@ class ConverterA2W:
         non_standard = ~data["Category"].isin(allowed_categories)
         data.loc[non_standard & (data["Amount"] < 0), "Category"] = "Withdrawal"
         data.loc[non_standard & (data["Amount"] > 0), "Category"] = "Deposit"
-        data.loc[non_standard & (data["Amount"] == 0), "Category"] = "Deposit"
         return data
+
+    def _drop_zero_amount_rows(self, data: pd.DataFrame) -> pd.DataFrame:
+        return data[data["Amount"] != 0].copy()
 
     def _to_wealthfolio_columns(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
@@ -45,6 +47,7 @@ class ConverterA2W:
         converted_data = self._filter_split_rows(data)
         converted_data = self._update_empty_categories(converted_data)
         converted_data = self._normalize_categories(converted_data)
+        converted_data = self._drop_zero_amount_rows(converted_data)
         return self._to_wealthfolio_columns(converted_data)
 
     def convert(self, cash_accounts: list[str]) -> Path:
