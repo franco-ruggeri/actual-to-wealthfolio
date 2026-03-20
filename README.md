@@ -92,11 +92,12 @@ Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
 ├── README.md
 ├── pyproject.toml
 ├── data/
-│   ├── actual-file-1.csv                  # Actual transactions for a budget file
+│   ├── actual-<budget-file>.csv
 │   └── ...
 ├── output/
-│   └── wealthfolio-<account>-<budget-file>.csv
-│                                        # One output file per account per budget file
+│   ├── wealthfolio-<account>-<budget-file>.csv
+│   └── ...
+│
 └── src/actual_to_wealthfolio/
     ├── __main__.py                         # Enables python -m actual_to_wealthfolio
     ├── converter.py                        # CSV transformation logic
