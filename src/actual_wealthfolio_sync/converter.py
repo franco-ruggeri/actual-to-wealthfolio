@@ -4,10 +4,18 @@ import re
 import pandas as pd
 
 
-class ConverterA2W:
+class Converter:
     DATA_DIR = Path("data")
     OUTPUT_DIR = Path("output")
     DUPLICATE_AMOUNT_EPSILON = 0.000001
+    TYPE_MAPPING = {
+        "transfer in": "Transfer in",
+        "transfer out": "Transfer out",
+        "deposit": "Deposit",
+        "withdrawal": "Withdrawal",
+        "stock sales": "Sell",
+        "stock purchases": "Buy",
+    }
 
     def _get_currency_input_paths(self) -> list[tuple[str, Path]]:
         input_paths: list[tuple[str, Path]] = []
@@ -51,16 +59,29 @@ class ConverterA2W:
         data.loc[non_standard & (data["Amount"] > 0), "Category"] = "Deposit"
         return data
 
+    def _extract_trade_values_from_notes(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+        notes = data["Notes"].fillna("").astype(str)
+        quantity = notes.str.extract(r"(?i)quantity\s*:\s*(-?\d+(?:\.\d+)?)", expand=False)
+        unit_price = notes.str.extract(r"(?i)unit\s*price\s*:\s*(-?\d+(?:\.\d+)?)", expand=False)
+        data["Quantity"] = quantity
+        data["Unit_Price"] = unit_price
+        return data
+
+    def _map_categories_to_type(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+        normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
+        data["Type"] = normalized_category.map(self.TYPE_MAPPING)
+        return data[data["Type"].notna()].copy()
+
     def _drop_zero_amount_rows(self, data: pd.DataFrame) -> pd.DataFrame:
         return data[(data["Amount"] > 0) | (data["Amount"] < 0)].copy()
 
     def _to_wealthfolio_columns(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
         data["Symbol"] = None
-        data["Quantity"] = None
-        data["Unit_Price"] = None
-        data = data[["Date", "Symbol", "Notes", "Category", "Amount", "Quantity", "Unit_Price"]]
-        return data.rename(columns={"Notes": "Comment", "Category": "Type"})
+        data = data[["Date", "Symbol", "Notes", "Type", "Amount", "Quantity", "Unit_Price"]]
+        return data.rename(columns={"Notes": "Comment"})
 
     def _sanitize_account_name(self, account_name: str) -> str:
         kebab = re.sub(r"[^a-z0-9]+", "-", account_name.lower())
@@ -69,7 +90,9 @@ class ConverterA2W:
     def _convert_dataframe(self, data: pd.DataFrame) -> pd.DataFrame:
         converted_data = self._filter_split_rows(data)
         converted_data = self._update_empty_categories(converted_data)
+        converted_data = self._extract_trade_values_from_notes(converted_data)
         converted_data = self._normalize_categories(converted_data)
+        converted_data = self._map_categories_to_type(converted_data)
         converted_data = self._drop_zero_amount_rows(converted_data)
         converted_data = self._to_wealthfolio_columns(converted_data)
         return self._deduplicate_same_day_amount_category(converted_data)
