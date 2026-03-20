@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  ruff:
+  checks:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,3 +30,9 @@ jobs:
 
       - name: Ruff format check
         run: uv run ruff format . --check
+
+      - name: MyPy
+        run: uv run mypy .
+
+      - name: Pytest
+        run: uv run pytest

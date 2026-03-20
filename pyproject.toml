@@ -25,5 +25,6 @@ dev = [
   "basedpyright>=1.38.3",
   "mypy>=1.19.1",
   "pandas-stubs>=3.0.0.260204",
+  "pytest>=8.4.2",
   "ruff>=0.15.7",
 ]
