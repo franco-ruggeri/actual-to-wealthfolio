@@ -22,7 +22,7 @@ def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch
                 "Date": "2026-01-10",
                 "Account": "Main Account",
                 "Payee": "Local Store",
-                "Notes": "",
+                "Notes": "weekly groceries",
                 "Category": "Groceries",
                 "Amount": -42.5,
             }
