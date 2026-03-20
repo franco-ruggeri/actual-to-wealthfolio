@@ -13,6 +13,16 @@ Convert Actual Budget CSV exports into Wealthfolio import files.
 Actual Budget is the single source of truth. From Actual Budget transactions,
 this tool generates transactions that can be imported in Wealthfolio.
 
+## Motivation
+
+You only want to add each transaction once and keep data in both apps.
+
+Actual can synchronize transactions from bank accounts for free (for example,
+via GoCardless), so a practical workflow is:
+
+1. Sync transactions in Actual.
+2. Sync Actual and Wealthfolio with this tool.
+
 ## Assumptions
 
 ### Categories
