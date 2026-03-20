@@ -67,6 +67,22 @@ You can also use `uv`.
    There is one CSV file for each account.
 5. Import the CSV files in Wealthfolio.
 
+## Example input -> output
+
+Example input row in `data/actual-main.csv`:
+
+```csv
+Date,Account,Payee,Notes,Category,Amount
+2026-01-11,Brokerage,AAPL,"Quantity: 3; Unit price: 150.00",Stock purchases,-450.00
+```
+
+Example output row in `output/wealthfolio-brokerage-main.csv`:
+
+```csv
+Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
+2026-01-11,AAPL,"Quantity: 3; Unit price: 150.00",Buy,-450.00,3,150.00
+```
+
 ## Architecture
 
 ### Directory Structure
