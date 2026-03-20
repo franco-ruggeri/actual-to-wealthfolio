@@ -9,6 +9,30 @@ Convert Actual Budget CSV exports into Wealthfolio import files.
 Actual Budget is the single source of truth. From Actual Budget transactions,
 this tool generates transactions that can be imported in Wealthfolio.
 
+## Assumptions
+
+Category names are normalized and remapped with the following rules:
+
+```python
+CATEGORY_RENAMES = {
+    "stock purchases": "Buy",
+    "stock sales": "Sell",
+    "dividends": "Dividend",
+    "interests": "Interest",
+    "income taxes": "Tax",
+    "banking fees": "Fee",
+}
+```
+
+For `Stock purchases`, `Stock sales`, and `Dividends`, the `Notes` field must
+include trade annotations in this format:
+
+- `Quantity: X; Unit price: Y`
+
+Example:
+
+- `Quantity: 10; Unit price: 123.45`
+
 ## Installation
 
 ```bash
