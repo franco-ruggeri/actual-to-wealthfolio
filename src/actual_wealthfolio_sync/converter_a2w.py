@@ -81,14 +81,19 @@ class ConverterA2W:
         data["Amount"] = data["Amount"] + (duplicate_index * self.DUPLICATE_AMOUNT_EPSILON)
         return data
 
-    def convert(self, cash_accounts: list[str]) -> dict[str, Path]:
+    def convert(self) -> dict[str, Path]:
         currency_input_paths = self._get_currency_input_paths()
         self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
         outputs: dict[str, Path] = {}
+
         for currency, input_path in currency_input_paths:
             actual_data = self._load_actual_data(input_path)
-            for account_name in cash_accounts:
+            account_names = sorted(actual_data["Account"].dropna().astype(str).str.strip().unique())
+            for account_name in account_names:
+                if not account_name:
+                    continue
+
                 cash_data = actual_data[actual_data["Account"] == account_name].copy()
                 if cash_data.empty:
                     continue

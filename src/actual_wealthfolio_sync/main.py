@@ -1,28 +1,24 @@
 import sys
 
-from actual_wealthfolio_sync.account_manager import AccountManager
 from actual_wealthfolio_sync.converter_a2w import ConverterA2W
+from actual_wealthfolio_sync.converter_w2a import ConverterW2A
 
 
 def main() -> None:
     try:
-        account_manager = AccountManager()
         converter_a2w = ConverterA2W()
-
-        print("Loading account configuration...")
-        cash_accounts = account_manager.get_cash_accounts()
-
-        print(f"  Found {len(cash_accounts)} cash account(s)")
+        converter_w2a = ConverterW2A()
 
         print("\nProcessing data...")
-        wealthfolio_outputs = converter_a2w.convert(cash_accounts)
+        wealthfolio_outputs = converter_a2w.convert()
+        actual_outputs = converter_w2a.convert()
 
         print("\nWriting processed data...")
         for account_key, wealthfolio_output in wealthfolio_outputs.items():
             print(f"  Wealthfolio ({account_key}): {wealthfolio_output}")
 
-        # for account_name, actual_output in actual_outputs.items():
-        #     print(f"  Actual ({account_name}): {actual_output}")
+        for account_key, actual_output in actual_outputs.items():
+            print(f"  Actual ({account_key}): {actual_output}")
 
         print("\nProcessing complete!")
 
