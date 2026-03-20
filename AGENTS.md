@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Operational guide for coding agents working in `actual-wealthfolio-sync`.
+Operational guide for coding agents working in `wealthfolio-actualbudget-sync`.
 
 ## 1) Repository Snapshot (as of this guide)
 
@@ -32,7 +32,7 @@ Use these commands unless the repository evolves with explicit alternatives.
 
 ### Run application
 
-- Run via console script: `uv run actual-wealthfolio-sync`
+- Run via console script: `uv run wealthfolio-actualbudget-sync`
 - Run as module: `uv run python -m actual_wealthfolio_sync`
 
 ### Tests
