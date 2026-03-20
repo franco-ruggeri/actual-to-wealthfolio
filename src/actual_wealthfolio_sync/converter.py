@@ -8,14 +8,27 @@ class Converter:
     DATA_DIR = Path("data")
     OUTPUT_DIR = Path("output")
     DUPLICATE_AMOUNT_EPSILON = 0.000001
-    TYPE_MAPPING = {
-        "transfer in": "Transfer in",
-        "transfer out": "Transfer out",
-        "deposit": "Deposit",
-        "withdrawal": "Withdrawal",
-        "stock sales": "Sell",
+    CATEGORY_RENAMES = {
         "stock purchases": "Buy",
+        "stock sales": "Sell",
+        "dividends": "Dividend",
+        "interests": "Interest",
+        "income taxes": "Tax",
+        "banking fees": "Fee",
     }
+    KNOWN_CATEGORIES = {
+        "transfer in",
+        "transfer out",
+        "deposit",
+        "withdrawal",
+        "stock purchases",
+        "stock sales",
+        "dividends",
+        "interests",
+        "income taxes",
+        "banking fees",
+    }
+    TRADE_CATEGORY_NAMES = {"stock purchases", "stock sales", "dividends"}
 
     def _get_currency_input_paths(self) -> list[tuple[str, Path]]:
         input_paths: list[tuple[str, Path]] = []
@@ -53,8 +66,8 @@ class Converter:
 
     def _normalize_categories(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
-        allowed_categories = ["Transfer in", "Transfer out", "Deposit", "Withdrawal"]
-        non_standard = ~data["Category"].isin(allowed_categories)
+        normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
+        non_standard = ~normalized_category.isin(self.KNOWN_CATEGORIES)
         data.loc[non_standard & (data["Amount"] < 0), "Category"] = "Withdrawal"
         data.loc[non_standard & (data["Amount"] > 0), "Category"] = "Deposit"
         return data
@@ -62,24 +75,35 @@ class Converter:
     def _extract_trade_values_from_notes(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
         notes = data["Notes"].fillna("").astype(str)
-        quantity = notes.str.extract(r"(?i)quantity\s*:\s*(-?\d+(?:\.\d+)?)", expand=False)
-        unit_price = notes.str.extract(r"(?i)unit\s*price\s*:\s*(-?\d+(?:\.\d+)?)", expand=False)
-        data["Quantity"] = quantity
-        data["Unit_Price"] = unit_price
+        normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
+        is_trade_category = normalized_category.isin(self.TRADE_CATEGORY_NAMES)
+        quantity = notes.str.extract(r"(?i)quantity\s*[:=]\s*(-?\d+(?:\.\d+)?)", expand=False)
+        unit_price = notes.str.extract(r"(?i)unit[_\s]*price\s*[:=]\s*(-?\d+(?:\.\d+)?)", expand=False)
+        data["Quantity"] = quantity.where(is_trade_category)
+        data["Unit_Price"] = unit_price.where(is_trade_category)
         return data
 
     def _map_categories_to_type(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
         normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
-        data["Type"] = normalized_category.map(self.TYPE_MAPPING)
-        return data[data["Type"].notna()].copy()
+        mapped = normalized_category.map(self.CATEGORY_RENAMES)
+        data["Category"] = mapped.where(mapped.notna(), data["Category"])
+        return data
+
+    def _set_symbol_from_payee(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
+        normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
+        use_payee_as_symbol = normalized_category.isin(self.TRADE_CATEGORY_NAMES)
+        payee = data["Payee"].fillna("").astype(str).str.strip()
+        data["Symbol"] = payee.where(use_payee_as_symbol, "")
+        return data
 
     def _drop_zero_amount_rows(self, data: pd.DataFrame) -> pd.DataFrame:
         return data[(data["Amount"] > 0) | (data["Amount"] < 0)].copy()
 
     def _to_wealthfolio_columns(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
-        data["Symbol"] = None
+        data["Type"] = data["Category"]
         data = data[["Date", "Symbol", "Notes", "Type", "Amount", "Quantity", "Unit_Price"]]
         return data.rename(columns={"Notes": "Comment"})
 
@@ -92,6 +116,7 @@ class Converter:
         converted_data = self._update_empty_categories(converted_data)
         converted_data = self._extract_trade_values_from_notes(converted_data)
         converted_data = self._normalize_categories(converted_data)
+        converted_data = self._set_symbol_from_payee(converted_data)
         converted_data = self._map_categories_to_type(converted_data)
         converted_data = self._drop_zero_amount_rows(converted_data)
         converted_data = self._to_wealthfolio_columns(converted_data)
