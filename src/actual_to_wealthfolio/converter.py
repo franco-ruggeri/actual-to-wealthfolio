@@ -30,18 +30,17 @@ class Converter:
     }
     TRADE_CATEGORY_NAMES = {"stock purchases", "stock sales", "dividends"}
 
-    def _get_currency_input_paths(self) -> list[tuple[str, Path]]:
+    def _get_budget_file_input_paths(self) -> list[tuple[str, Path]]:
         input_paths: list[tuple[str, Path]] = []
         for path in sorted(self.DATA_DIR.glob("actual-*.csv")):
-            match = re.fullmatch(r"actual-([a-z0-9]+)", path.stem)
-            if not match:
+            budget_file_name = path.stem.removeprefix("actual-").strip()
+            if not budget_file_name or budget_file_name == path.stem:
                 continue
-            currency = match.group(1)
-            input_paths.append((currency, path))
+            input_paths.append((budget_file_name, path))
 
         if not input_paths:
             raise FileNotFoundError(
-                f"No currency input files found in {self.DATA_DIR} (expected actual-<currency>.csv)"
+                f"No budget input files found in {self.DATA_DIR} (expected actual-<budget-file>.csv)"
             )
 
         return input_paths
@@ -111,6 +110,10 @@ class Converter:
         kebab = re.sub(r"[^a-z0-9]+", "-", account_name.lower())
         return kebab.strip("-")
 
+    def _sanitize_budget_file_name(self, budget_file_name: str) -> str:
+        kebab = re.sub(r"[^a-z0-9]+", "-", budget_file_name.lower())
+        return kebab.strip("-")
+
     def _convert_dataframe(self, data: pd.DataFrame) -> pd.DataFrame:
         converted_data = self._filter_split_rows(data)
         converted_data = self._update_empty_categories(converted_data)
@@ -130,12 +133,12 @@ class Converter:
         return data
 
     def convert(self) -> dict[str, Path]:
-        currency_input_paths = self._get_currency_input_paths()
+        budget_file_input_paths = self._get_budget_file_input_paths()
         self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
         outputs: dict[str, Path] = {}
 
-        for currency, input_path in currency_input_paths:
+        for budget_file_name, input_path in budget_file_input_paths:
             actual_data = self._load_actual_data(input_path)
             account_names = sorted(actual_data["Account"].dropna().astype(str).str.strip().unique())
             for account_name in account_names:
@@ -151,8 +154,9 @@ class Converter:
                     continue
 
                 safe_name = self._sanitize_account_name(account_name)
-                output_path = self.OUTPUT_DIR / f"wealthfolio-{safe_name}-{currency}.csv"
+                safe_budget_file_name = self._sanitize_budget_file_name(budget_file_name)
+                output_path = self.OUTPUT_DIR / f"wealthfolio-{safe_name}-{safe_budget_file_name}.csv"
                 converted_data.to_csv(output_path, index=False)
-                outputs[f"{currency}:{safe_name}"] = output_path
+                outputs[f"{budget_file_name}:{safe_name}"] = output_path
 
         return outputs
