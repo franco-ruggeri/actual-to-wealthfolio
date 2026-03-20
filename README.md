@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/a84d6371-9d55-4664-92d2-fe4d61a191df" />
+![actual-to-wealthfolio logo](docs/logo.png)
 
 ## Overview
 
