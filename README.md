@@ -15,21 +15,27 @@ this tool generates transactions that can be imported in Wealthfolio.
 
 ## Assumptions
 
-Category names are normalized and remapped with the following rules:
+### Categories
 
-```python
-CATEGORY_RENAMES = {
-    "stock purchases": "Buy",
-    "stock sales": "Sell",
-    "dividends": "Dividend",
-    "interests": "Interest",
-    "income taxes": "Tax",
-    "banking fees": "Fee",
-}
+Actual categories are mapped to Wealthfolio categories with the following rules:
+
+```text
+stock purchases => Buy
+stock sales => Sell
+dividends => Dividend
+interests => Interest
+income taxes => Tax
+banking fees => Fee
 ```
 
-For `Stock purchases`, `Stock sales`, and `Dividends`, the `Notes` field must
-include trade annotations in this format:
+In Actual, make sure you name the categories with the left names. All the other
+categories are mapped to `Withdrawal`, `Deposit`, `Transfer in`, and
+`Transfer out`, depending on the amount and transaction type.
+
+### Trade notes
+
+For `stock purchases`, `stock sales`, and `dividends`, the `Notes` field in
+Actual must include trade annotations in this format:
 
 - `Quantity: X; Unit price: Y`
 
