@@ -1,4 +1,3 @@
-import math
 from pathlib import Path
 import re
 
@@ -14,8 +13,8 @@ class ConverterW2A:
     CATEGORY_MAPPING = {"SELL": "Stock sales", "BUY": "Stock purchases"}
     FEE_CATEGORY = "Banking fees"
 
-    def _truncate_to_two_decimals(self, amount: float) -> float:
-        return math.trunc(amount * 100) / 100
+    def _round_to_two_decimals(self, amount: float) -> float:
+        return round(amount, 2)
 
     def _first_existing_column(self, data: pd.DataFrame, candidates: list[str]) -> str | None:
         for candidate in candidates:
@@ -95,7 +94,7 @@ class ConverterW2A:
             actual_data = pd.concat([actual_data, fee_rows], ignore_index=True)
 
         actual_data["Amount"] = pd.to_numeric(actual_data["Amount"], errors="coerce").fillna(0.0)
-        actual_data["Amount"] = actual_data["Amount"].map(self._truncate_to_two_decimals)
+        actual_data["Amount"] = actual_data["Amount"].map(self._round_to_two_decimals)
 
         return actual_data[self.ACTUAL_COLUMNS]
 
