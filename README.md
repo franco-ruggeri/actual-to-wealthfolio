@@ -1,38 +1,26 @@
 # wealthfolio-actualbudget-sync
 
-Wealthfolio addon to sync data with Actual Budget.
-
-## Current Status
-
-- Addon shell is wired into the Wealthfolio sidebar.
-- Addon route is available at `/addon/wealthfolio-actualbudget-sync`.
-- UI currently includes a `Sync` button placeholder.
-- Sync logic is not implemented yet.
+Sync Wealthfolio and Actual Budget
 
 ## Development
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
-# Start Wealthfolio dev server
-pnpm dev:server
+# Start development server
+npm run dev:server
 
-# Type-check
-pnpm type-check
+# Build for production
+npm run build
 
-# Build addon
-pnpm build
-
-# Package addon zip
-pnpm bundle
+# Package addon
+npm run bundle
 ```
 
-## Project Structure
+## Features
 
-- `src/addon.tsx`: addon entry and UI.
-- `manifest.json`: addon metadata.
-- `dist/addon.js`: build output.
+- Add your features here
 
 ## License
 
