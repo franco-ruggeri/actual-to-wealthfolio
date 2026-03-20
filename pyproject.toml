@@ -4,8 +4,20 @@ version = "0.1.0"
 description = "Convert Actual Budget CSV exports to Wealthfolio-compatible format"
 readme = "README.md"
 license = { file = "LICENSE" }
+authors = [{ name = "Franco Ruggeri" }]
 requires-python = ">=3.13"
 dependencies = ["pandas>=3.0.1"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/franco-ruggeri/actual-to-wealthfolio"
+Repository = "https://github.com/franco-ruggeri/actual-to-wealthfolio"
+Issues = "https://github.com/franco-ruggeri/actual-to-wealthfolio/issues"
 
 [project.scripts]
 actual-to-wealthfolio = "actual_to_wealthfolio.main:main"
