@@ -3,6 +3,7 @@ name = "actual_to_wealthfolio"
 version = "0.1.0"
 description = "Convert Actual Budget CSV exports to Wealthfolio-compatible format"
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.13"
 dependencies = ["pandas>=3.0.1"]
 
