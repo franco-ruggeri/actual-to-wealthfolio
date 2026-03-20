@@ -1,11 +1,13 @@
-# actual-to-wealthfolio
+# Actual to Wealthfolio
 
-Convert Actual Budget CSV exports into Wealthfolio import files.
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/a84d6371-9d55-4664-92d2-fe4d61a191df" />
 
 ## Overview
 
+Convert Actual Budget CSV exports into Wealthfolio import files.
+
 Actual Budget is the single source of truth. From Actual Budget transactions,
-the tool generates transactions that can be imported in Wealthfolio.
+this tool generates transactions that can be imported in Wealthfolio.
 
 ## Installation
 
