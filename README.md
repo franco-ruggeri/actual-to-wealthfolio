@@ -30,13 +30,18 @@ via GoCardless), so a practical workflow is:
 Actual categories are mapped to Wealthfolio categories with the following rules:
 
 ```text
-stock purchases => Buy
-stock sales => Sell
-dividends => Dividend
-interests => Interest
-income taxes => Tax
-banking fees => Fee
+stock purchases* => Buy
+stock sales*     => Sell
+dividends        => Dividend
+interests        => Interest
+income taxes     => Tax
+banking fees     => Fee
 ```
+
+Categories marked with `*` use **prefix matching**: any category whose name
+starts with that prefix is matched.  This lets you use sub-categories such as
+`Stock purchases - ERIC-B` or `Stock sales - AAPL` while still mapping them to
+`Buy` and `Sell` respectively.
 
 In Actual, make sure you name the categories with the left names. All the other
 categories are mapped to `Withdrawal`, `Deposit`, `Transfer in`, and
@@ -44,7 +49,8 @@ categories are mapped to `Withdrawal`, `Deposit`, `Transfer in`, and
 
 ### Trade notes
 
-For `stock purchases`, `stock sales`, and `dividends`, the `Notes` field in
+For `stock purchases` (and sub-categories such as `stock purchases - ERIC-B`),
+`stock sales` (and sub-categories), and `dividends`, the `Notes` field in
 Actual must include trade annotations in this format:
 
 - `Quantity: X; Unit price: Y`
@@ -84,13 +90,15 @@ Example input row in `data/actual-main.csv`:
 ```csv
 Date,Account,Payee,Notes,Category,Amount
 2026-01-11,Brokerage,AAPL,"Quantity: 3; Unit price: 150.00",Stock purchases,-450.00
+2026-01-11,Brokerage,ERIC-B,"Quantity: 100; Unit price: 9.50",Stock purchases - ERIC-B,-950.00
 ```
 
-Example output row in `output/wealthfolio-brokerage-main.csv`:
+Example output rows in `output/wealthfolio-brokerage-main.csv`:
 
 ```csv
 Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
 2026-01-11,AAPL,"Quantity: 3; Unit price: 150.00",Buy,-450.00,3,150.00
+2026-01-11,ERIC-B,"Quantity: 100; Unit price: 9.50",Buy,-950.00,100,9.50
 ```
 
 ## Architecture
