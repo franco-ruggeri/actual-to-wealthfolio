@@ -12,11 +12,11 @@ def _write_actual_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
 
     _write_actual_csv(
-        data_dir / "actual-main.csv",
+        input_dir / "actual-main.csv",
         [
             {
                 "Date": "2026-01-10",
@@ -42,11 +42,11 @@ def test_convert_remaps_trade_category_to_buy_and_extracts_trade_fields(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
 
     _write_actual_csv(
-        data_dir / "actual-investing.csv",
+        input_dir / "actual-investing.csv",
         [
             {
                 "Date": "2026-01-11",
@@ -72,11 +72,11 @@ def test_convert_remaps_trade_category_to_buy_and_extracts_trade_fields(
 def test_convert_remaps_stock_purchases_subcategory_to_buy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Categories that start with 'Stock purchases' (e.g. 'Stock purchases - ERIC-B') are treated as Buy."""
     monkeypatch.chdir(tmp_path)
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
 
     _write_actual_csv(
-        data_dir / "actual-investing.csv",
+        input_dir / "actual-investing.csv",
         [
             {
                 "Date": "2026-03-15",
@@ -102,11 +102,11 @@ def test_convert_remaps_stock_purchases_subcategory_to_buy(tmp_path: Path, monke
 def test_convert_remaps_stock_sales_subcategory_to_sell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Categories that start with 'Stock sales' (e.g. 'Stock sales - ERIC-B') are treated as Sell."""
     monkeypatch.chdir(tmp_path)
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
 
     _write_actual_csv(
-        data_dir / "actual-investing.csv",
+        input_dir / "actual-investing.csv",
         [
             {
                 "Date": "2026-03-20",
@@ -131,7 +131,7 @@ def test_convert_remaps_stock_sales_subcategory_to_sell(tmp_path: Path, monkeypa
 
 def test_convert_raises_when_no_budget_input_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "data").mkdir()
+    (tmp_path / "input").mkdir()
 
     with pytest.raises(FileNotFoundError, match=r"expected actual-<budget-file>\.csv"):
         Converter().convert()
