@@ -5,7 +5,7 @@ import pandas as pd
 
 
 class Converter:
-    DATA_DIR = Path("data")
+    INPUT_DIR = Path("input")
     OUTPUT_DIR = Path("output")
     DUPLICATE_AMOUNT_EPSILON = 0.000001
     # Exact-match category → Wealthfolio type mappings.
@@ -70,7 +70,7 @@ class Converter:
 
     def _get_budget_file_input_paths(self) -> list[tuple[str, Path]]:
         input_paths: list[tuple[str, Path]] = []
-        for path in sorted(self.DATA_DIR.glob("actual-*.csv")):
+        for path in sorted(self.INPUT_DIR.glob("actual-*.csv")):
             budget_file_name = path.stem.removeprefix("actual-").strip()
             if not budget_file_name or budget_file_name == path.stem:
                 continue
@@ -78,7 +78,7 @@ class Converter:
 
         if not input_paths:
             raise FileNotFoundError(
-                f"No budget input files found in {self.DATA_DIR} (expected actual-<budget-file>.csv)"
+                f"No budget input files found in {self.INPUT_DIR} (expected actual-<budget-file>.csv)"
             )
 
         return input_paths

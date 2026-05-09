@@ -70,7 +70,7 @@ You can also use `uv`.
 ## Usage
 
 1. For each budget file, go to _All accounts_ > three dots > _Export_.
-2. Move the exported CSV files in `data` and name them
+2. Move the exported CSV files in `input` and name them
    `actual-<budget-file>.csv`, where `<budget-file>` is the name of the budget
    file.
 3. Run:
@@ -85,7 +85,7 @@ You can also use `uv`.
 
 ## Example input -> output
 
-Example input row in `data/actual-main.csv`:
+Example input row in `input/actual-main.csv`:
 
 ```csv
 Date,Account,Payee,Notes,Category,Amount
@@ -109,7 +109,7 @@ Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
 .
 ├── README.md
 ├── pyproject.toml
-├── data/
+├── input/
 │   ├── actual-<budget-file>.csv
 │   └── ...
 ├── output/
@@ -125,6 +125,6 @@ Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
 
 ### Data Flow
 
-1. Load Actual transaction files matching `data/actual-<budget-file>.csv`
+1. Load Actual transaction files matching `input/actual-<budget-file>.csv`
 2. Convert each account to Wealthfolio format
 3. Write `output/wealthfolio-<account>-<budget-file>.csv` for non-empty outputs
