@@ -3,5 +3,6 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .DS_Store
-/input/*.csv
+/input/
+!/input/example-config.yaml
 /output/

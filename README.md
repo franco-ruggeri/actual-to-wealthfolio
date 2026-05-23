@@ -55,9 +55,10 @@ You can also use `uv`.
 ## Configuration
 
 Category remaps are defined in `input/config.yaml`. The file is required — the
-tool raises an error if it is absent.
+tool raises an error if it is absent. It is gitignored so your personal config
+stays local.
 
-Each entry in the `remaps` list has three fields:
+Each entry in the list has three fields:
 
 | Field   | Type    | Description                                               |
 | ------- | ------- | --------------------------------------------------------- |
@@ -65,7 +66,7 @@ Each entry in the `remaps` list has three fields:
 | `to`    | string  | Wealthfolio transaction type                              |
 | `trade` | boolean | Whether to extract `Quantity`, `Unit_Price`, and `Symbol` |
 
-See [`input/config.yaml`](input/config.yaml) for a working example.
+An example is provided in [`input/example-config.yaml`](input/example-config.yaml).
 
 ## Usage
 
