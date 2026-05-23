@@ -27,31 +27,16 @@ via GoCardless), so a practical workflow is:
 
 ### Categories
 
-Actual categories are mapped to Wealthfolio categories with the following rules:
+Actual categories are mapped to Wealthfolio types as configured in
+`input/config.yaml` (see [Configuration](#configuration) below).
 
-```text
-stock purchases* => Buy
-stock sales*     => Sell
-dividends        => Dividend
-interests        => Interest
-income taxes     => Tax
-banking fees     => Fee
-```
-
-Categories marked with `*` use **prefix matching**: any category whose name
-starts with that prefix is matched.  This lets you use sub-categories such as
-`Stock purchases - ERIC-B` or `Stock sales - AAPL` while still mapping them to
-`Buy` and `Sell` respectively.
-
-In Actual, make sure you name the categories with the left names. All the other
-categories are mapped to `Withdrawal`, `Deposit`, `Transfer in`, and
-`Transfer out`, depending on the amount and transaction type.
+All categories not listed in the config are mapped to `Withdrawal`, `Deposit`,
+`Transfer in`, or `Transfer out`, depending on the amount and transaction type.
 
 ### Trade notes
 
-For `stock purchases` (and sub-categories such as `stock purchases - ERIC-B`),
-`stock sales` (and sub-categories), and `dividends`, the `Notes` field in
-Actual must include trade annotations in this format:
+For categories marked with `trade: true`, the `Notes` field in Actual must
+include trade annotations in this format:
 
 - `Quantity: X; Unit price: Y`
 
@@ -67,21 +52,37 @@ pip install .
 
 You can also use `uv`.
 
+## Configuration
+
+Category remaps are defined in `input/config.yaml`. The file is required — the
+tool raises an error if it is absent.
+
+Each entry in the `remaps` list has three fields:
+
+| Field   | Type    | Description                                               |
+| ------- | ------- | --------------------------------------------------------- |
+| `from`  | string  | Actual Budget category name (case-insensitive)            |
+| `to`    | string  | Wealthfolio transaction type                              |
+| `trade` | boolean | Whether to extract `Quantity`, `Unit_Price`, and `Symbol` |
+
+See [`input/config.yaml`](input/config.yaml) for a working example.
+
 ## Usage
 
-1. For each budget file, go to _All accounts_ > three dots > _Export_.
-2. Move the exported CSV files in `input` and name them
+1. Edit `input/config.yaml` with your Actual Budget category names.
+2. For each budget file, go to _All accounts_ > three dots > _Export_.
+3. Move the exported CSV files into `input/` and name them
    `actual-<budget-file>.csv`, where `<budget-file>` is the name of the budget
    file.
-3. Run:
+4. Run:
 
    ```bash
    actual-to-wealthfolio
    ```
 
-4. The converted CSV files are `output/wealthfolio-<account>-<budget-file>.csv`.
+5. The converted CSV files are `output/wealthfolio-<account>-<budget-file>.csv`.
    There is one CSV file for each account.
-5. Import the CSV files in Wealthfolio.
+6. Import the CSV files in Wealthfolio.
 
 ## Example input -> output
 
@@ -90,15 +91,13 @@ Example input row in `input/actual-main.csv`:
 ```csv
 Date,Account,Payee,Notes,Category,Amount
 2026-01-11,Brokerage,AAPL,"Quantity: 3; Unit price: 150.00",Stock purchases,-450.00
-2026-01-11,Brokerage,ERIC-B,"Quantity: 100; Unit price: 9.50",Stock purchases - ERIC-B,-950.00
 ```
 
-Example output rows in `output/wealthfolio-brokerage-main.csv`:
+Example output row in `output/wealthfolio-brokerage-main.csv`:
 
 ```csv
 Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
 2026-01-11,AAPL,"Quantity: 3; Unit price: 150.00",Buy,-450.00,3,150.00
-2026-01-11,ERIC-B,"Quantity: 100; Unit price: 9.50",Buy,-950.00,100,9.50
 ```
 
 ## Architecture
@@ -110,6 +109,7 @@ Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
 ├── README.md
 ├── pyproject.toml
 ├── input/
+│   ├── config.yaml
 │   ├── actual-<budget-file>.csv
 │   └── ...
 ├── output/
@@ -118,13 +118,14 @@ Date,Symbol,Comment,Type,Amount,Quantity,Unit_Price
 │
 └── src/actual_to_wealthfolio/
     ├── __main__.py                         # Enables python -m actual_to_wealthfolio
+    ├── config.py                           # Config loading
     ├── converter.py                        # CSV transformation logic
     └── main.py                             # CLI orchestration
-
 ```
 
 ### Data Flow
 
-1. Load Actual transaction files matching `input/actual-<budget-file>.csv`
-2. Convert each account to Wealthfolio format
-3. Write `output/wealthfolio-<account>-<budget-file>.csv` for non-empty outputs
+1. Load `input/config.yaml`
+2. Load Actual transaction files matching `input/actual-<budget-file>.csv`
+3. Convert each account to Wealthfolio format
+4. Write `output/wealthfolio-<account>-<budget-file>.csv` for non-empty outputs

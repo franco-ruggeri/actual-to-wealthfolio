@@ -3,11 +3,26 @@ from pathlib import Path
 import pytest
 import pandas as pd
 
+from actual_to_wealthfolio.config import RemapConfig, RemapEntry
 from actual_to_wealthfolio.converter import Converter
 
 
 def _write_actual_csv(path: Path, rows: list[dict[str, object]]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
+
+
+def _standard_config() -> RemapConfig:
+    """Return the standard remap config used across converter tests."""
+    return RemapConfig(
+        remaps=[
+            RemapEntry(from_category="dividends", to_type="Dividend", trade=True),
+            RemapEntry(from_category="interests", to_type="Interest", trade=False),
+            RemapEntry(from_category="income taxes", to_type="Tax", trade=False),
+            RemapEntry(from_category="banking fees", to_type="Fee", trade=False),
+            RemapEntry(from_category="stock purchases", to_type="Buy", trade=True),
+            RemapEntry(from_category="stock sales", to_type="Sell", trade=True),
+        ]
+    )
 
 
 def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -29,7 +44,7 @@ def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch
         ],
     )
 
-    outputs = Converter().convert()
+    outputs = Converter(remap_config=_standard_config()).convert()
 
     output_key = "main:main-account"
     assert output_key in outputs
@@ -59,7 +74,7 @@ def test_convert_remaps_trade_category_to_buy_and_extracts_trade_fields(
         ],
     )
 
-    outputs = Converter().convert()
+    outputs = Converter(remap_config=_standard_config()).convert()
     output_path = outputs["investing:brokerage"]
     converted = pd.read_csv(output_path)
 
@@ -69,38 +84,7 @@ def test_convert_remaps_trade_category_to_buy_and_extracts_trade_fields(
     assert pd.to_numeric(converted.loc[0, "Unit_Price"]) == pytest.approx(150.0)
 
 
-def test_convert_remaps_stock_purchases_subcategory_to_buy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Categories that start with 'Stock purchases' (e.g. 'Stock purchases - ERIC-B') are treated as Buy."""
-    monkeypatch.chdir(tmp_path)
-    input_dir = tmp_path / "input"
-    input_dir.mkdir()
-
-    _write_actual_csv(
-        input_dir / "actual-investing.csv",
-        [
-            {
-                "Date": "2026-03-15",
-                "Account": "Brokerage",
-                "Payee": "ERIC-B",
-                "Notes": "Quantity: 100; Unit price: 9.50",
-                "Category": "Stock purchases - ERIC-B",
-                "Amount": -950.0,
-            }
-        ],
-    )
-
-    outputs = Converter().convert()
-    output_path = outputs["investing:brokerage"]
-    converted = pd.read_csv(output_path)
-
-    assert converted.loc[0, "Type"] == "Buy"
-    assert converted.loc[0, "Symbol"] == "ERIC-B"
-    assert pd.to_numeric(converted.loc[0, "Quantity"]) == pytest.approx(100.0)
-    assert pd.to_numeric(converted.loc[0, "Unit_Price"]) == pytest.approx(9.50)
-
-
-def test_convert_remaps_stock_sales_subcategory_to_sell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Categories that start with 'Stock sales' (e.g. 'Stock sales - ERIC-B') are treated as Sell."""
+def test_convert_remaps_stock_sales_to_sell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()
@@ -113,13 +97,13 @@ def test_convert_remaps_stock_sales_subcategory_to_sell(tmp_path: Path, monkeypa
                 "Account": "Brokerage",
                 "Payee": "ERIC-B",
                 "Notes": "Quantity: 50; Unit price: 10.00",
-                "Category": "Stock sales - ERIC-B",
+                "Category": "Stock sales",
                 "Amount": 500.0,
             }
         ],
     )
 
-    outputs = Converter().convert()
+    outputs = Converter(remap_config=_standard_config()).convert()
     output_path = outputs["investing:brokerage"]
     converted = pd.read_csv(output_path)
 
@@ -134,4 +118,32 @@ def test_convert_raises_when_no_budget_input_files(tmp_path: Path, monkeypatch: 
     (tmp_path / "input").mkdir()
 
     with pytest.raises(FileNotFoundError, match=r"expected actual-<budget-file>\.csv"):
-        Converter().convert()
+        Converter(remap_config=_standard_config()).convert()
+
+
+def test_convert_uses_custom_category_remap(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Converter respects a RemapConfig with a user-defined remap entry."""
+    monkeypatch.chdir(tmp_path)
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+
+    _write_actual_csv(
+        input_dir / "actual-main.csv",
+        [
+            {
+                "Date": "2026-04-01",
+                "Account": "Savings",
+                "Payee": "Bank",
+                "Notes": "interest payment",
+                "Category": "interest income",
+                "Amount": 10.0,
+            }
+        ],
+    )
+
+    custom_config = RemapConfig(remaps=[RemapEntry(from_category="interest income", to_type="Interest", trade=False)])
+    outputs = Converter(remap_config=custom_config).convert()
+    output_path = outputs["main:savings"]
+    converted = pd.read_csv(output_path)
+
+    assert converted.loc[0, "Type"] == "Interest"

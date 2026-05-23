@@ -1,0 +1,23 @@
+- from: dividends
+  to: Dividend
+  trade: true
+
+- from: interests
+  to: Interest
+  trade: false
+
+- from: income taxes
+  to: Tax
+  trade: false
+
+- from: banking fees
+  to: Fee
+  trade: false
+
+- from: stock purchases
+  to: Buy
+  trade: true
+
+- from: stock sales
+  to: Sell
+  trade: true
