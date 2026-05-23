@@ -3,42 +3,29 @@ import re
 
 import pandas as pd
 
-from actual_to_wealthfolio.config import RemapConfig
+from actual_to_wealthfolio.config import Config
 
 
 class Converter:
     INPUT_DIR = Path("input")
     OUTPUT_DIR = Path("output")
     DUPLICATE_AMOUNT_EPSILON = 0.000001
-    # Categories produced internally as fallback outputs; never re-normalised.
     _INTERNAL_CATEGORIES: frozenset[str] = frozenset({"transfer in", "transfer out", "deposit", "withdrawal"})
 
-    def __init__(self, remap_config: RemapConfig) -> None:
-        self._cfg = remap_config
-        # Precompute lookup structures from the remap entries.
-        self._type_map: dict[str, str] = {e.from_category.lower(): e.to_type for e in remap_config.remaps}
-        self._trade_set: frozenset[str] = frozenset(e.from_category.lower() for e in remap_config.remaps if e.trade)
+    def __init__(self, config: Config) -> None:
+        self._cfg = config
+        self._type_map: dict[str, str] = {e.from_category.lower(): e.to_type for e in config.get_remaps()}
+        self._trade_set: frozenset[str] = frozenset(e.from_category.lower() for e in config.get_remaps() if e.trade)
         self._known_set: frozenset[str] = frozenset(self._type_map) | self._INTERNAL_CATEGORIES
 
-    # ------------------------------------------------------------------
-    # Category helpers
-    # ------------------------------------------------------------------
-
     def _is_trade_category(self, normalized: pd.Series) -> pd.Series:
-        """Return a boolean Series that is True for categories with trade=true."""
         return normalized.isin(self._trade_set)
 
     def _is_known_category(self, normalized: pd.Series) -> pd.Series:
-        """Return a boolean Series that is True for any known/recognised category."""
         return normalized.isin(self._known_set)
 
     def _map_category_to_type(self, category_lower: str) -> str | None:
-        """Map a single normalised category string to its Wealthfolio type, or None."""
         return self._type_map.get(category_lower)
-
-    # ------------------------------------------------------------------
-    # I/O helpers
-    # ------------------------------------------------------------------
 
     def _get_budget_file_input_paths(self) -> list[tuple[str, Path]]:
         input_paths: list[tuple[str, Path]] = []
@@ -59,10 +46,6 @@ class Converter:
         if not input_path.exists():
             raise FileNotFoundError(f"Actual data file not found: {input_path}")
         return pd.read_csv(input_path)
-
-    # ------------------------------------------------------------------
-    # Transformation steps
-    # ------------------------------------------------------------------
 
     def _filter_split_rows(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()

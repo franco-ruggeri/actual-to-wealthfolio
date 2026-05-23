@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from actual_to_wealthfolio.config import RemapConfig, RemapEntry, load_config
+from actual_to_wealthfolio.config import Config, Entry
 
 
 def _write_yaml(path: Path, content: str) -> None:
@@ -26,38 +26,38 @@ def _full_yaml() -> str:
 """
 
 
-def test_load_config_raises_when_no_file(tmp_path: Path) -> None:
+def test_config_raises_when_no_file(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="config.yaml"):
-        load_config(tmp_path / "config.yaml")
+        Config(tmp_path / "config.yaml")
 
 
-def test_load_config_reads_entries(tmp_path: Path) -> None:
+def test_config_reads_entries(tmp_path: Path) -> None:
     _write_yaml(tmp_path / "config.yaml", _full_yaml())
 
-    config = load_config(tmp_path / "config.yaml")
+    config = Config(tmp_path / "config.yaml")
 
-    assert len(config.remaps) == 3
-    assert config.remaps[0] == RemapEntry(from_category="dividends", to_type="Dividend", trade=True)
-    assert config.remaps[1] == RemapEntry(from_category="interests", to_type="Interest", trade=False)
-    assert config.remaps[2] == RemapEntry(from_category="stock purchases", to_type="Buy", trade=True)
+    assert len(config.get_remaps()) == 3
+    assert config.get_remaps()[0] == Entry(from_category="dividends", to_type="Dividend", trade=True)
+    assert config.get_remaps()[1] == Entry(from_category="interests", to_type="Interest", trade=False)
+    assert config.get_remaps()[2] == Entry(from_category="stock purchases", to_type="Buy", trade=True)
 
 
-def test_load_config_allows_empty_remaps(tmp_path: Path) -> None:
+def test_config_allows_empty_remaps(tmp_path: Path) -> None:
     _write_yaml(tmp_path / "config.yaml", "[]\n")
 
-    config = load_config(tmp_path / "config.yaml")
+    config = Config(tmp_path / "config.yaml")
 
-    assert config.remaps == []
+    assert config.get_remaps() == []
 
 
-def test_load_config_raises_on_non_sequence_top_level(tmp_path: Path) -> None:
+def test_config_raises_on_non_sequence_top_level(tmp_path: Path) -> None:
     _write_yaml(tmp_path / "config.yaml", "other_key: value\n")
 
     with pytest.raises(ValueError, match="sequence"):
-        load_config(tmp_path / "config.yaml")
+        Config(tmp_path / "config.yaml")
 
 
-def test_load_config_raises_on_missing_from_field(tmp_path: Path) -> None:
+def test_config_raises_on_missing_from_field(tmp_path: Path) -> None:
     _write_yaml(
         tmp_path / "config.yaml",
         """\
@@ -67,10 +67,10 @@ def test_load_config_raises_on_missing_from_field(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="'from'"):
-        load_config(tmp_path / "config.yaml")
+        Config(tmp_path / "config.yaml")
 
 
-def test_load_config_raises_on_missing_to_field(tmp_path: Path) -> None:
+def test_config_raises_on_missing_to_field(tmp_path: Path) -> None:
     _write_yaml(
         tmp_path / "config.yaml",
         """\
@@ -80,10 +80,10 @@ def test_load_config_raises_on_missing_to_field(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="'to'"):
-        load_config(tmp_path / "config.yaml")
+        Config(tmp_path / "config.yaml")
 
 
-def test_load_config_raises_on_missing_trade_field(tmp_path: Path) -> None:
+def test_config_raises_on_missing_trade_field(tmp_path: Path) -> None:
     _write_yaml(
         tmp_path / "config.yaml",
         """\
@@ -93,10 +93,10 @@ def test_load_config_raises_on_missing_trade_field(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="'trade'"):
-        load_config(tmp_path / "config.yaml")
+        Config(tmp_path / "config.yaml")
 
 
-def test_load_config_raises_on_non_bool_trade(tmp_path: Path) -> None:
+def test_config_raises_on_non_bool_trade(tmp_path: Path) -> None:
     _write_yaml(
         tmp_path / "config.yaml",
         """\
@@ -107,20 +107,11 @@ def test_load_config_raises_on_non_bool_trade(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="'trade'"):
-        load_config(tmp_path / "config.yaml")
+        Config(tmp_path / "config.yaml")
 
 
-def test_load_config_raises_on_invalid_yaml(tmp_path: Path) -> None:
+def test_config_raises_on_invalid_yaml(tmp_path: Path) -> None:
     (tmp_path / "config.yaml").write_text("key: [unclosed\n", encoding="utf-8")
 
     with pytest.raises(yaml.YAMLError):
-        load_config(tmp_path / "config.yaml")
-
-
-def test_remap_config_stores_entries() -> None:
-    entry = RemapEntry(from_category="dividends", to_type="Dividend", trade=True)
-    config = RemapConfig(remaps=[entry])
-
-    assert config.remaps[0].from_category == "dividends"
-    assert config.remaps[0].to_type == "Dividend"
-    assert config.remaps[0].trade is True
+        Config(tmp_path / "config.yaml")
