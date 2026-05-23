@@ -1,6 +1,6 @@
 [project]
 name = "actual_to_wealthfolio"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Convert Actual Budget CSV exports to Wealthfolio-compatible format"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -23,8 +23,11 @@ Issues = "https://github.com/franco-ruggeri/actual-to-wealthfolio/issues"
 actual-to-wealthfolio = "actual_to_wealthfolio.main:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/actual_to_wealthfolio"]
