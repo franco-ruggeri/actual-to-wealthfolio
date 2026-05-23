@@ -7,18 +7,18 @@ Thanks for your interest in contributing to actual-to-wealthfolio.
 1. Fork and clone the repository.
 2. Install dependencies:
 
-```bash
-uv sync --group dev
-```
+   ```bash
+   uv sync --group dev
+   ```
 
 3. Run checks before opening a pull request:
 
-```bash
-uv run ruff check .
-uv run ruff format . --check
-uv run mypy .
-uv run pytest
-```
+   ```bash
+   uv run ruff check .
+   uv run ruff format . --check
+   uv run mypy .
+   uv run pytest
+   ```
 
 ## Pull request guidelines
 
