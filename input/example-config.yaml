@@ -1,16 +1,16 @@
-- from: capital - dividends
+- from: dividends
   to: Dividend
   trade: true
 
-- from: capital - interests
+- from: interests
   to: Interest
   trade: false
 
-- from: tax - labor income
+- from: earned income tax
   to: Tax
   trade: false
 
-- from: tax - capital income
+- from: capital income tax
   to: Tax
   trade: false
 
@@ -18,11 +18,7 @@
   to: Fee
   trade: false
 
-- from: stock purchases - funds
-  to: Buy
-  trade: true
-
-- from: stock purchases - espp
+- from: stock purchases
   to: Buy
   trade: true
 
