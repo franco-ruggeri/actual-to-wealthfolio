@@ -25,18 +25,35 @@ via GoCardless), so a practical workflow is:
 
 ## Assumptions
 
-### Categories
+### Supported Wealthfolio transaction types
 
-Actual categories are mapped to Wealthfolio types as configured in
-`input/config.yaml` (see [Configuration](#configuration) below).
+Only the following Wealthfolio transaction types are used:
 
-All categories not listed in the config are mapped to `Withdrawal`, `Deposit`,
-`Transfer in`, or `Transfer out`, depending on the amount and transaction type.
+| Type          | When                                      |
+| ------------- | ----------------------------------------- |
+| `Buy`         | Trade category with negative amount       |
+| `Sell`        | Trade category with positive amount       |
+| `Deposit`     | Non-trade category with positive amount   |
+| `Withdrawal`  | Non-trade category with negative amount   |
+| `Transfer in` | Empty category with positive amount       |
+| `Transfer out`| Empty category with negative amount       |
+
+Types such as `Tax`, `Fee`, `Dividend`, and `Interest` are not used. A tax
+return (positive amount) becomes `Deposit`; a tax payment (negative amount)
+becomes `Withdrawal`.
+
+### Trade categories
+
+Categories listed in `input/config.yaml` are treated as stock transactions.
+The type is inferred from the amount sign: negative → `Buy`, positive → `Sell`.
+The `Payee` field is used as the ticker symbol.
+
+All other categories fall through to `Deposit`, `Withdrawal`, `Transfer in`,
+or `Transfer out` based on amount sign — no configuration needed.
 
 ### Trade notes
 
-For categories marked with `trade: true`, the `Notes` field in Actual must
-include trade annotations in this format:
+For trade categories, the `Notes` field in Actual must include:
 
 - `Quantity: X; Unit price: Y`
 
@@ -54,19 +71,17 @@ You can also use `uv`.
 
 ## Configuration
 
-Category remaps are defined in `input/config.yaml`. The file is required — the
-tool raises an error if it is absent. It is gitignored so your personal config
-stays local.
+`input/config.yaml` is a YAML list of Actual Budget category names that
+represent stock transactions. The file is required — the tool raises an error
+if it is absent. It is gitignored so your personal config stays local.
 
-Each entry in the list has three fields:
+```yaml
+- stock purchases - funds
+- stock purchases - espp
+- stock sales
+```
 
-| Field   | Type    | Description                                               |
-| ------- | ------- | --------------------------------------------------------- |
-| `from`  | string  | Actual Budget category name (case-insensitive)            |
-| `to`    | string  | Wealthfolio transaction type                              |
-| `trade` | boolean | Whether to extract `Quantity`, `Unit_Price`, and `Symbol` |
-
-An example is provided in
+Category matching is case-insensitive. An example is provided in
 [`input/example-config.yaml`](input/example-config.yaml).
 
 ## Usage
