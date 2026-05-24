@@ -1,27 +1,2 @@
-- from: dividends
-  to: Dividend
-  trade: true
-
-- from: interests
-  to: Interest
-  trade: false
-
-- from: earned income tax
-  to: Tax
-  trade: false
-
-- from: capital income tax
-  to: Tax
-  trade: false
-
-- from: banking fees
-  to: Fee
-  trade: false
-
-- from: stock purchases
-  to: Buy
-  trade: true
-
-- from: stock sales
-  to: Sell
-  trade: true
+- stock purchases
+- stock sales
