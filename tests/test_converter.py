@@ -19,9 +19,8 @@ def _write_remap_config(path: Path, entries: list[Entry]) -> None:
 
 
 def _standard_config(tmp_path: Path) -> Config:
-    config_path = tmp_path / "input" / "config.yaml"
     _write_remap_config(
-        config_path,
+        tmp_path / "input" / "config.yaml",
         [
             Entry(from_category="dividends", to_type="Dividend", trade=True),
             Entry(from_category="interests", to_type="Interest", trade=False),
@@ -31,7 +30,7 @@ def _standard_config(tmp_path: Path) -> Config:
             Entry(from_category="stock sales", to_type="Sell", trade=True),
         ],
     )
-    return Config(config_path)
+    return Config()
 
 
 def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -149,9 +148,9 @@ def test_convert_uses_custom_category_remap(tmp_path: Path, monkeypatch: pytest.
         ],
     )
 
-    config_path = tmp_path / "input" / "custom_config.yaml"
+    config_path = tmp_path / "input" / "config.yaml"
     _write_remap_config(config_path, [Entry(from_category="interest income", to_type="Interest", trade=False)])
-    custom_config = Config(config_path)
+    custom_config = Config()
     outputs = Converter(config=custom_config).convert()
     output_path = outputs["main:savings"]
     converted = pd.read_csv(output_path)
