@@ -66,24 +66,32 @@ Each entry in the list has three fields:
 | `to`    | string  | Wealthfolio transaction type                              |
 | `trade` | boolean | Whether to extract `Quantity`, `Unit_Price`, and `Symbol` |
 
-An example is provided in [`input/example-config.yaml`](input/example-config.yaml).
+An example is provided in
+[`input/example-config.yaml`](input/example-config.yaml).
 
 ## Usage
 
-1. Edit `input/config.yaml` with your Actual Budget category names.
-2. For each budget file, go to _All accounts_ > three dots > _Export_.
-3. Move the exported CSV files into `input/` and name them
+1. Edit configuration `input/config.yaml` with your Actual Budget category
+   names.
+
+   ```bash
+   cp input/example-config.yaml input/config.yaml
+   # edit input/config.yaml
+   ```
+
+1. For each budget file, go to _All accounts_ > three dots > _Export_.
+1. Move the exported CSV files into `input/` and name them
    `actual-<budget-file>.csv`, where `<budget-file>` is the name of the budget
    file.
-4. Run:
+1. Run:
 
    ```bash
    actual-to-wealthfolio
    ```
 
-5. The converted CSV files are `output/wealthfolio-<account>-<budget-file>.csv`.
+1. The converted CSV files are `output/wealthfolio-<account>-<budget-file>.csv`.
    There is one CSV file for each account.
-6. Import the CSV files in Wealthfolio.
+1. Import the CSV files in Wealthfolio.
 
 ## Example input -> output
 
