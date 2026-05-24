@@ -19,20 +19,24 @@ pip install .   # or: uv sync
 
 ### 2. Configure
 
-Create `input/config.yaml` listing the Actual category names that represent stock transactions (case-insensitive):
+Create `input/config.yaml` listing the Actual category names that represent
+stock transactions (case-insensitive):
 
 ```yaml
 - stock purchases
 - stock sales
 ```
 
-For stock transactions, the `Notes` field in Actual must include `Quantity: X; Unit price: Y` (e.g. `Quantity: 10; Unit price: 123.45`), and `Payee` is used as the ticker symbol.
+For stock transactions, the `Notes` field in Actual must include
+`Quantity: X; Unit price: Y` (e.g. `Quantity: 10; Unit price: 123.45`), and
+`Payee` is used as the ticker symbol.
 
 ### 3. Export from Actual Budget
 
-For each budget file, go to _All accounts_ > three dots > _Export_. Move the exported CSV into `input/` and name it `actual-<budget-file>.csv`.
+For each budget file, go to _All accounts_ > three dots > _Export_. Move the
+exported CSV into `input/` and name it `actual-<budget-file>.csv`.
 
-```
+```text
 input/
   config.yaml
   actual-<budget-file>.csv   # one per budget file
@@ -46,7 +50,8 @@ actual-to-wealthfolio
 
 ### 5. Import into Wealthfolio
 
-Output files are written to `output/wealthfolio-<account>-<budget-file>.csv` (one per account). Import each file in Wealthfolio.
+Output files are written to `output/wealthfolio-<account>-<budget-file>.csv`
+(one per account). Import each file in Wealthfolio.
 
 ## Transaction type mapping
 
@@ -59,7 +64,12 @@ Output files are written to `output/wealthfolio-<account>-<budget-file>.csv` (on
 | Empty           | +      | `Transfer in`    |
 | Empty           | –      | `Transfer out`   |
 
-Types like `Tax`, `Fee`, `Dividend`, and `Interest` are not used.
+> [!NOTE]
+>
+> Types like `Tax`, `Fee`, `Dividend`, and `Interest` are not used. The reason
+> is that Wealthfolio does not support both signs for these types. So, for
+> instance, it is not possible to correctly map tax transactions with positive
+> sign (e.g., tax return).
 
 ## Contributing
 
