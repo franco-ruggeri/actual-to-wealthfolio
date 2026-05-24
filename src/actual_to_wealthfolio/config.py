@@ -3,8 +3,6 @@ from pathlib import Path
 
 import yaml
 
-DEFAULT_CONFIG_PATH = Path("input/config.yaml")
-
 
 @dataclass
 class Entry:
@@ -14,19 +12,21 @@ class Entry:
 
 
 class Config:
-    def __init__(self, config_path: Path = DEFAULT_CONFIG_PATH) -> None:
-        if not config_path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {config_path}")
+    _PATH = Path("input/config.yaml")
 
-        with open(config_path) as f:
+    def __init__(self) -> None:
+        if not self._PATH.exists():
+            raise FileNotFoundError(f"Configuration file not found: {self._PATH}")
+
+        with open(self._PATH) as f:
             raw = yaml.safe_load(f)
 
         if not isinstance(raw, list):
-            raise ValueError(f"{config_path}: must be a YAML sequence at the top level")
+            raise ValueError(f"{self._PATH}: must be a YAML sequence at the top level")
 
         remaps: list[Entry] = []
         for i, item in enumerate(raw):
-            label = f"{config_path}: [{i}]"
+            label = f"{self._PATH}: [{i}]"
 
             if not isinstance(item, dict):
                 raise ValueError(f"{label}: each entry must be a YAML mapping")
