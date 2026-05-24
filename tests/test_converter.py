@@ -10,13 +10,13 @@ def _write_actual_csv(path: Path, rows: list[dict[str, object]]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
-def _write_trade_config(path: Path, categories: list[str]) -> None:
+def _write_stock_config(path: Path, categories: list[str]) -> None:
     lines = [f"- {c}" for c in categories]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _setup_config(tmp_path: Path) -> None:
-    _write_trade_config(
+    _write_stock_config(
         tmp_path / "input" / "config.yaml",
         ["stock purchases", "stock sales"],
     )
@@ -51,7 +51,7 @@ def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch
     assert output_path.exists()
 
 
-def test_convert_negative_trade_amount_becomes_buy_and_extracts_trade_fields(
+def test_convert_negative_stock_amount_becomes_buy_and_extracts_stock_fields(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
@@ -83,7 +83,7 @@ def test_convert_negative_trade_amount_becomes_buy_and_extracts_trade_fields(
     assert pd.to_numeric(converted.loc[0, "Unit_Price"]) == pytest.approx(150.0)
 
 
-def test_convert_positive_trade_amount_becomes_sell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_positive_stock_amount_becomes_sell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()
@@ -123,7 +123,7 @@ def test_convert_raises_when_no_budget_input_files(tmp_path: Path, monkeypatch: 
 
 
 def test_convert_non_remapped_positive_amount_becomes_deposit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A positive amount in a non-trade category (e.g. a tax return) is classified as Deposit."""
+    """A positive amount in a non-stock category (e.g. a tax return) is classified as Deposit."""
     monkeypatch.chdir(tmp_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()
@@ -153,7 +153,7 @@ def test_convert_non_remapped_positive_amount_becomes_deposit(tmp_path: Path, mo
 def test_convert_non_remapped_negative_amount_becomes_withdrawal(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A negative amount in a non-trade category (e.g. a tax payment) is classified as Withdrawal."""
+    """A negative amount in a non-stock category (e.g. a tax payment) is classified as Withdrawal."""
     monkeypatch.chdir(tmp_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()

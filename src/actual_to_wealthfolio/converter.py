@@ -13,10 +13,10 @@ class Converter:
     _INTERNAL_CATEGORIES = {"transfer in", "transfer out", "deposit", "withdrawal"}
 
     def __init__(self) -> None:
-        self._trade_set = {c.lower() for c in self._load_trade_categories()}
-        self._known_set = self._trade_set | self._INTERNAL_CATEGORIES
+        self._stock_set = {c.lower() for c in self._load_stock_categories()}
+        self._known_set = self._stock_set | self._INTERNAL_CATEGORIES
 
-    def _load_trade_categories(self) -> list[str]:
+    def _load_stock_categories(self) -> list[str]:
         if not self._CONFIG_PATH.exists():
             raise FileNotFoundError(f"Configuration file not found: {self._CONFIG_PATH}")
         with open(self._CONFIG_PATH) as f:
@@ -30,8 +30,8 @@ class Converter:
             categories.append(item)
         return categories
 
-    def _is_trade_category(self, normalized: pd.Series) -> pd.Series:
-        return normalized.isin(self._trade_set)
+    def _is_stock_category(self, normalized: pd.Series) -> pd.Series:
+        return normalized.isin(self._stock_set)
 
     def _is_known_category(self, normalized: pd.Series) -> pd.Series:
         return normalized.isin(self._known_set)
@@ -77,29 +77,29 @@ class Converter:
         data.loc[non_standard & (data["Amount"] > 0), "Category"] = "Deposit"
         return data
 
-    def _extract_trade_values_from_notes(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _extract_stock_values_from_notes(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
         notes = data["Notes"].fillna("").astype(str)
         normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
-        is_trade_category = self._is_trade_category(normalized_category)
+        is_stock_category = self._is_stock_category(normalized_category)
         quantity = notes.str.extract(r"(?i)quantity\s*[:=]\s*(-?\d+(?:\.\d+)?)", expand=False)
         unit_price = notes.str.extract(r"(?i)unit[_\s]*price\s*[:=]\s*(-?\d+(?:\.\d+)?)", expand=False)
-        data["Quantity"] = quantity.where(is_trade_category)
-        data["Unit_Price"] = unit_price.where(is_trade_category)
+        data["Quantity"] = quantity.where(is_stock_category)
+        data["Unit_Price"] = unit_price.where(is_stock_category)
         return data
 
-    def _apply_trade_types(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _apply_stock_types(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
         normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
-        is_trade = self._is_trade_category(normalized_category)
-        data.loc[is_trade & (data["Amount"] < 0), "Category"] = "Buy"
-        data.loc[is_trade & (data["Amount"] > 0), "Category"] = "Sell"
+        is_stock = self._is_stock_category(normalized_category)
+        data.loc[is_stock & (data["Amount"] < 0), "Category"] = "Buy"
+        data.loc[is_stock & (data["Amount"] > 0), "Category"] = "Sell"
         return data
 
     def _set_symbol_from_payee(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
         normalized_category = data["Category"].fillna("").astype(str).str.strip().str.lower()
-        use_payee_as_symbol = self._is_trade_category(normalized_category)
+        use_payee_as_symbol = self._is_stock_category(normalized_category)
         payee = data["Payee"].fillna("").astype(str).str.strip()
         data["Symbol"] = payee.where(use_payee_as_symbol, "")
         return data
@@ -124,10 +124,10 @@ class Converter:
     def _convert_dataframe(self, data: pd.DataFrame) -> pd.DataFrame:
         converted_data = self._filter_split_rows(data)
         converted_data = self._update_empty_categories(converted_data)
-        converted_data = self._extract_trade_values_from_notes(converted_data)
+        converted_data = self._extract_stock_values_from_notes(converted_data)
         converted_data = self._normalize_categories(converted_data)
         converted_data = self._set_symbol_from_payee(converted_data)
-        converted_data = self._apply_trade_types(converted_data)
+        converted_data = self._apply_stock_types(converted_data)
         converted_data = self._drop_zero_amount_rows(converted_data)
         converted_data = self._to_wealthfolio_columns(converted_data)
         return self._deduplicate_same_day_amount_category(converted_data)

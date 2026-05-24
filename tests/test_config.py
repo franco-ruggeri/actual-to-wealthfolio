@@ -17,24 +17,24 @@ def test_converter_raises_when_no_config_file(tmp_path: Path, monkeypatch: pytes
         Converter()
 
 
-def test_converter_reads_trade_categories(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_converter_reads_stock_categories(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     (tmp_path / "input").mkdir()
     _write_yaml(tmp_path / "input" / "config.yaml", "- stock purchases\n- stock sales\n")
 
     converter = Converter()
 
-    assert converter._trade_set == {"stock purchases", "stock sales"}
+    assert converter._stock_set == {"stock purchases", "stock sales"}
 
 
-def test_converter_allows_empty_trade_categories(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_converter_allows_empty_stock_categories(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     (tmp_path / "input").mkdir()
     _write_yaml(tmp_path / "input" / "config.yaml", "[]\n")
 
     converter = Converter()
 
-    assert converter._trade_set == set()
+    assert converter._stock_set == set()
 
 
 def test_converter_raises_on_non_sequence_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
