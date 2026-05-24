@@ -10,13 +10,13 @@ class Converter:
     INPUT_DIR = Path("input")
     OUTPUT_DIR = Path("output")
     DUPLICATE_AMOUNT_EPSILON = 0.000001
-    _INTERNAL_CATEGORIES: frozenset[str] = frozenset({"transfer in", "transfer out", "deposit", "withdrawal"})
+    _INTERNAL_CATEGORIES = {"transfer in", "transfer out", "deposit", "withdrawal"}
 
     def __init__(self, config: Config) -> None:
         self._cfg = config
-        self._type_map: dict[str, str] = {e.from_category.lower(): e.to_type for e in config.get_remaps()}
-        self._trade_set: frozenset[str] = frozenset(e.from_category.lower() for e in config.get_remaps() if e.trade)
-        self._known_set: frozenset[str] = frozenset(self._type_map) | self._INTERNAL_CATEGORIES
+        self._type_map = {e.from_category.lower(): e.to_type for e in config.get_remaps()}
+        self._trade_set = {e.from_category.lower() for e in config.get_remaps() if e.trade}
+        self._known_set = set(self._type_map) | self._INTERNAL_CATEGORIES
 
     def _is_trade_category(self, normalized: pd.Series) -> pd.Series:
         return normalized.isin(self._trade_set)
