@@ -9,43 +9,44 @@
 Convert [Actual Budget](https://actualbudget.org) CSV exports into
 [Wealthfolio](https://wealthfolio.app) import files — one file per account.
 
-## Workflow
+## Usage
 
-1. Sync transactions in Actual (e.g. via GoCardless).
-2. Export each budget file: _All accounts_ > three dots > _Export_.
-3. Run this tool to generate Wealthfolio-ready CSVs.
-4. Import them in Wealthfolio.
+### 1. Install
 
-## Setup
-
-Place files in `input/` before running:
-
-```
-input/
-  config.yaml                    # required: your stock category names
-  actual-<budget-file>.csv       # one per Actual budget file
-output/
-  wealthfolio-<account>-<budget-file>.csv   # generated
+```bash
+pip install .   # or: uv sync
 ```
 
-**`input/config.yaml`** — list the Actual category names that represent stock
-transactions (case-insensitive):
+### 2. Configure
+
+Create `input/config.yaml` listing the Actual category names that represent stock transactions (case-insensitive):
 
 ```yaml
 - stock purchases
 - stock sales
 ```
 
-For stock transactions, the `Notes` field in Actual must include
-`Quantity: X; Unit price: Y` (e.g. `Quantity: 10; Unit price: 123.45`), and
-`Payee` is used as the ticker symbol.
+For stock transactions, the `Notes` field in Actual must include `Quantity: X; Unit price: Y` (e.g. `Quantity: 10; Unit price: 123.45`), and `Payee` is used as the ticker symbol.
 
-## Usage
+### 3. Export from Actual Budget
+
+For each budget file, go to _All accounts_ > three dots > _Export_. Move the exported CSV into `input/` and name it `actual-<budget-file>.csv`.
+
+```
+input/
+  config.yaml
+  actual-<budget-file>.csv   # one per budget file
+```
+
+### 4. Run
 
 ```bash
-pip install .
 actual-to-wealthfolio
 ```
+
+### 5. Import into Wealthfolio
+
+Output files are written to `output/wealthfolio-<account>-<budget-file>.csv` (one per account). Import each file in Wealthfolio.
 
 ## Transaction type mapping
 
