@@ -6,119 +6,59 @@
 
 ![actual-to-wealthfolio logo](docs/logo.png)
 
-## Overview
+Convert [Actual Budget](https://actualbudget.org) CSV exports into
+[Wealthfolio](https://wealthfolio.app) import files — one file per account.
 
-Convert Actual Budget CSV exports into Wealthfolio import files.
+## Workflow
 
-Actual Budget is the single source of truth. From Actual Budget transactions,
-this tool generates transactions that can be imported in Wealthfolio.
+1. Sync transactions in Actual (e.g. via GoCardless).
+2. Export each budget file: _All accounts_ > three dots > _Export_.
+3. Run this tool to generate Wealthfolio-ready CSVs.
+4. Import them in Wealthfolio.
 
-## Motivation
+## Setup
 
-You only want to add each transaction once and keep data in both apps.
+Place files in `input/` before running:
 
-Actual can synchronize transactions from bank accounts for free (for example,
-via GoCardless), so a practical workflow is:
-
-1. Sync transactions in Actual.
-2. Sync Actual and Wealthfolio with this tool.
-
-## Assumptions
-
-For stock categories, the `Notes` field in Actual must include:
-
-- `Quantity: X; Unit price: Y`
-
-Example:
-
-- `Quantity: 10; Unit price: 123.45`
-
-## Limitations
-
-Only the following Wealthfolio transaction types are used:
-
-| Type           | When                                    |
-| -------------- | --------------------------------------- |
-| `Buy`          | Stock category with negative amount     |
-| `Sell`         | Stock category with positive amount     |
-| `Deposit`      | Non-stock category with positive amount |
-| `Withdrawal`   | Non-stock category with negative amount |
-| `Transfer in`  | Empty category with positive amount     |
-| `Transfer out` | Empty category with negative amount     |
-
-Types such as `Tax`, `Fee`, `Dividend`, and `Interest` are not used. A tax
-return (positive amount) becomes `Deposit`; a tax payment (negative amount)
-becomes `Withdrawal`.
-
-## Installation
-
-```bash
-pip install .
+```
+input/
+  config.yaml                    # required: your stock category names
+  actual-<budget-file>.csv       # one per Actual budget file
+output/
+  wealthfolio-<account>-<budget-file>.csv   # generated
 ```
 
-You can also use `uv`.
-
-## Configuration
-
-`input/config.yaml` is a YAML list of Actual Budget category names that
-represent stock transactions. The file is required — the tool raises an error if
-it is absent. It is gitignored so your personal config stays local.
+**`input/config.yaml`** — list the Actual category names that represent stock
+transactions (case-insensitive):
 
 ```yaml
 - stock purchases
 - stock sales
 ```
 
-Category matching is case-insensitive.
-
-Categories listed in `input/config.yaml` are treated as stock transactions. The
-type is inferred from the amount sign: negative → `Buy`, positive → `Sell`. The
-`Payee` field is used as the ticker symbol.
-
-All other categories fall through to `Deposit`, `Withdrawal`, `Transfer in`, or
-`Transfer out` based on amount sign — no configuration needed.
+For stock transactions, the `Notes` field in Actual must include
+`Quantity: X; Unit price: Y` (e.g. `Quantity: 10; Unit price: 123.45`), and
+`Payee` is used as the ticker symbol.
 
 ## Usage
 
-### Prepare inputs
-
-1. Create `input/config.yaml` with your Actual Budget category names.
-2. In Actual Budget, for each budget file, go to _All accounts_ > three dots >
-   _Export_.
-3. Move the exported CSV files into `input/` and name them
-   `actual-<budget-file>.csv`, where `<budget-file>` is the name of the budget
-   file.
-
-The directory structure should look like this:
-
 ```bash
-.
-├── input/
-│   ├── config.yaml
-│   ├── actual-<budget-file>.csv
-│   └── ...
-├── output/
-│   ├── wealthfolio-<account>-<budget-file>.csv
-│   └── ...
-│
-└── src/actual_to_wealthfolio/
-│   └── ...
-```
-
-### Run
-
-Run:
-
-```bash
+pip install .
 actual-to-wealthfolio
 ```
 
-### Use outputs
+## Transaction type mapping
 
-The converted CSV files are `output/wealthfolio-<account>-<budget-file>.csv`.
-There is one CSV file for each account.
+| Actual category | Amount | Wealthfolio type |
+| --------------- | ------ | ---------------- |
+| Stock           | –      | `Buy`            |
+| Stock           | +      | `Sell`           |
+| Non-stock       | +      | `Deposit`        |
+| Non-stock       | –      | `Withdrawal`     |
+| Empty           | +      | `Transfer in`    |
+| Empty           | –      | `Transfer out`   |
 
-Import the CSV files in Wealthfolio.
+Types like `Tax`, `Fee`, `Dividend`, and `Interest` are not used.
 
 ## Contributing
 
