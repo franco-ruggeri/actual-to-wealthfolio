@@ -1,13 +1,11 @@
 import sys
 
-from actual_to_wealthfolio.config import Config
 from actual_to_wealthfolio.converter import Converter
 
 
 def main() -> None:
     try:
-        config = Config()
-        converter = Converter(config=config)
+        converter = Converter()
 
         print("\nProcessing data...")
         wealthfolio_outputs = converter.convert()

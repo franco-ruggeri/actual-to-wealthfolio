@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 import pandas as pd
 
-from actual_to_wealthfolio.config import Config, Entry
 from actual_to_wealthfolio.converter import Converter
 
 
@@ -11,26 +10,16 @@ def _write_actual_csv(path: Path, rows: list[dict[str, object]]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
-def _write_remap_config(path: Path, entries: list[Entry]) -> None:
-    lines = []
-    for e in entries:
-        lines.append(f"- from: {e.from_category}\n  to: {e.to_type}\n  trade: {'true' if e.trade else 'false'}")
-    path.write_text("\n\n".join(lines) + "\n", encoding="utf-8")
+def _write_trade_config(path: Path, categories: list[str]) -> None:
+    lines = [f"- {c}" for c in categories]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _standard_config(tmp_path: Path) -> Config:
-    _write_remap_config(
+def _setup_config(tmp_path: Path) -> None:
+    _write_trade_config(
         tmp_path / "input" / "config.yaml",
-        [
-            Entry(from_category="dividends", to_type="Dividend", trade=True),
-            Entry(from_category="interests", to_type="Interest", trade=False),
-            Entry(from_category="income taxes", to_type="Tax", trade=False),
-            Entry(from_category="banking fees", to_type="Fee", trade=False),
-            Entry(from_category="stock purchases", to_type="Buy", trade=True),
-            Entry(from_category="stock sales", to_type="Sell", trade=True),
-        ],
+        ["stock purchases", "stock sales"],
     )
-    return Config()
 
 
 def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -52,7 +41,8 @@ def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch
         ],
     )
 
-    outputs = Converter(config=_standard_config(tmp_path)).convert()
+    _setup_config(tmp_path)
+    outputs = Converter().convert()
 
     output_key = "main:main-account"
     assert output_key in outputs
@@ -61,7 +51,7 @@ def test_convert_writes_output_file_for_budget_input(tmp_path: Path, monkeypatch
     assert output_path.exists()
 
 
-def test_convert_remaps_trade_category_to_buy_and_extracts_trade_fields(
+def test_convert_negative_trade_amount_becomes_buy_and_extracts_trade_fields(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
@@ -82,7 +72,8 @@ def test_convert_remaps_trade_category_to_buy_and_extracts_trade_fields(
         ],
     )
 
-    outputs = Converter(config=_standard_config(tmp_path)).convert()
+    _setup_config(tmp_path)
+    outputs = Converter().convert()
     output_path = outputs["investing:brokerage"]
     converted = pd.read_csv(output_path)
 
@@ -92,7 +83,7 @@ def test_convert_remaps_trade_category_to_buy_and_extracts_trade_fields(
     assert pd.to_numeric(converted.loc[0, "Unit_Price"]) == pytest.approx(150.0)
 
 
-def test_convert_remaps_stock_sales_to_sell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_positive_trade_amount_becomes_sell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()
@@ -111,7 +102,8 @@ def test_convert_remaps_stock_sales_to_sell(tmp_path: Path, monkeypatch: pytest.
         ],
     )
 
-    outputs = Converter(config=_standard_config(tmp_path)).convert()
+    _setup_config(tmp_path)
+    outputs = Converter().convert()
     output_path = outputs["investing:brokerage"]
     converted = pd.read_csv(output_path)
 
@@ -125,11 +117,13 @@ def test_convert_raises_when_no_budget_input_files(tmp_path: Path, monkeypatch: 
     monkeypatch.chdir(tmp_path)
     (tmp_path / "input").mkdir()
 
+    _setup_config(tmp_path)
     with pytest.raises(FileNotFoundError, match=r"expected actual-<budget-file>\.csv"):
-        Converter(config=_standard_config(tmp_path)).convert()
+        Converter().convert()
 
 
-def test_convert_uses_custom_category_remap(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_convert_non_remapped_positive_amount_becomes_deposit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A positive amount in a non-trade category (e.g. a tax return) is classified as Deposit."""
     monkeypatch.chdir(tmp_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()
@@ -138,21 +132,49 @@ def test_convert_uses_custom_category_remap(tmp_path: Path, monkeypatch: pytest.
         input_dir / "actual-main.csv",
         [
             {
-                "Date": "2026-04-01",
+                "Date": "2026-04-15",
                 "Account": "Savings",
-                "Payee": "Bank",
-                "Notes": "interest payment",
-                "Category": "interest income",
-                "Amount": 10.0,
+                "Payee": "Tax Authority",
+                "Notes": "income tax return",
+                "Category": "income taxes",
+                "Amount": 350.0,
             }
         ],
     )
 
-    config_path = tmp_path / "input" / "config.yaml"
-    _write_remap_config(config_path, [Entry(from_category="interest income", to_type="Interest", trade=False)])
-    custom_config = Config()
-    outputs = Converter(config=custom_config).convert()
+    _setup_config(tmp_path)
+    outputs = Converter().convert()
     output_path = outputs["main:savings"]
     converted = pd.read_csv(output_path)
 
-    assert converted.loc[0, "Type"] == "Interest"
+    assert converted.loc[0, "Type"] == "Deposit"
+
+
+def test_convert_non_remapped_negative_amount_becomes_withdrawal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A negative amount in a non-trade category (e.g. a tax payment) is classified as Withdrawal."""
+    monkeypatch.chdir(tmp_path)
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+
+    _write_actual_csv(
+        input_dir / "actual-main.csv",
+        [
+            {
+                "Date": "2026-04-15",
+                "Account": "Savings",
+                "Payee": "Tax Authority",
+                "Notes": "income tax payment",
+                "Category": "income taxes",
+                "Amount": -500.0,
+            }
+        ],
+    )
+
+    _setup_config(tmp_path)
+    outputs = Converter().convert()
+    output_path = outputs["main:savings"]
+    converted = pd.read_csv(output_path)
+
+    assert converted.loc[0, "Type"] == "Withdrawal"
